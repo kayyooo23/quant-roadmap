@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quant Roadmap</title>
+<meta name="description" content="Личный трекер прогресса по C++, математике, теории вероятностей и стохастике на пути к позиции quant developer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f6f3ec;
+    --surface:#ffffff;
+    --ink:#232019;
+    --ink-soft:#6b6455;
+    --border:#ded7c6;
+    --accent-cpp:#2f5fae;
+    --accent-math:#1f7a6c;
+    --accent-prob:#b9542c;
+    --accent-stoch:#7a4fb5;
+    --status-learning:#c9922f;
+    --status-learning-ink:#4a3410;
+    --status-done:#2f9e44;
+    --status-done-ink:#ffffff;
+    --status-skip:#a85a56;
+    --status-skip-ink:#ffffff;
+    --status-pending-border:#c9c1ad;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:#14171c;
+      --surface:#1c2028;
+      --ink:#e8e4da;
+      --ink-soft:#a29a8c;
+      --border:#333a45;
+      --accent-cpp:#6c93e0;
+      --accent-math:#4fb39d;
+      --accent-prob:#e08a52;
+      --accent-stoch:#a685d9;
+      --status-learning:#e0ac4f;
+      --status-learning-ink:#2a1c05;
+      --status-done:#4cc26a;
+      --status-done-ink:#0a1a0d;
+      --status-skip:#c97c77;
+      --status-skip-ink:#2a0d0b;
+      --status-pending-border:#3d4553;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#14171c;
+    --surface:#1c2028;
+    --ink:#e8e4da;
+    --ink-soft:#a29a8c;
+    --border:#333a45;
+    --accent-cpp:#6c93e0;
+    --accent-math:#4fb39d;
+    --accent-prob:#e08a52;
+    --accent-stoch:#a685d9;
+    --status-learning:#e0ac4f;
+    --status-learning-ink:#2a1c05;
+    --status-done:#4cc26a;
+    --status-done-ink:#0a1a0d;
+    --status-skip:#c97c77;
+    --status-skip-ink:#2a0d0b;
+    --status-pending-border:#3d4553;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+    padding: 0 16px 64px;
+  }
+  .wrap{max-width:920px;margin:0 auto}
+
+  header.page-head{
+    padding:36px 0 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--border);
+    margin-bottom:28px;
+  }
+  .titleblock h1{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:26px;
+    margin:0 0 6px;
+    text-wrap:balance;
+    letter-spacing:-0.01em;
+  }
+  .titleblock p{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:14px;
+    max-width:56ch;
+  }
+  .theme-switch{
+    display:inline-flex;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .theme-switch button{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    background:transparent;
+    border:0;
+    border-right:1px solid var(--border);
+    color:var(--ink-soft);
+    padding:8px 12px;
+    cursor:pointer;
+  }
+  .theme-switch button:last-child{border-right:0}
+  .theme-switch button:hover{color:var(--ink)}
+  .theme-switch button[aria-checked="true"]{background:var(--ink);color:var(--bg)}
+  .theme-switch button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+
+  .overall{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:20px 22px;
+    margin-bottom:14px;
+  }
+  .overall-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .overall-label{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .overall-pct{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:34px;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+    line-height:1;
+  }
+  .overall-count{
+    font-size:14px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+  .overall .bar{height:10px;border-radius:5px}
+  .overall-breakdown{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .track-count{
+    margin-left:auto;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .menu{
+    position:absolute;
+    z-index:20;
+    display:flex;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:0 6px 20px rgba(0,0,0,.18);
+    overflow:hidden;
+  }
+  .menu button{
+    font-family:inherit;
+    font-size:12.5px;
+    background:transparent;
+    border:0;
+    border-right:1px solid var(--border);
+    color:var(--ink);
+    padding:8px 11px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .menu button:last-child{border-right:0}
+  .menu button:hover,.menu button:focus-visible{background:var(--bg);outline:none}
+  .menu button.active[data-set="learning"]{background:var(--status-learning);color:var(--status-learning-ink)}
+  .menu button.active[data-set="done"]{background:var(--status-done);color:var(--status-done-ink)}
+  .menu button.active[data-set="skip"]{background:var(--status-skip);color:var(--status-skip-ink)}
+  .chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:40px;
+  }
+  @media (max-width:700px){
+    .summary-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  .summary-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .summary-card .name{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .summary-card .pct{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:22px;
+    font-variant-numeric:tabular-nums;
+    margin-bottom:8px;
+  }
+  .bar{
+    height:6px;
+    border-radius:3px;
+    background:var(--status-pending-border);
+    overflow:hidden;
+    display:flex;
+  }
+  .bar span{height:100%}
+
+  .track{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:24px 24px 8px;
+    margin-bottom:28px;
+  }
+  .track-head{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+  }
+  .track-head .dot{
+    width:10px;height:10px;border-radius:50%;
+    display:inline-block;
+    flex:none;
+  }
+  .track-head h2{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:18px;
+    margin:0;
+  }
+  .track-desc a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+  .track-desc{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    margin:0 0 20px;
+    max-width:70ch;
+  }
+  .group{margin-bottom:18px}
+  .group-name{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11.5px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .chip{
+    font-size:13.5px;
+    line-height:1.3;
+    padding:7px 12px;
+    border-radius:8px;
+    border:1.5px solid var(--status-pending-border);
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+    text-align:left;
+    font-family:inherit;
+    transition:transform .08s ease;
+  }
+  .chip:active{transform:scale(0.97)}
+  .chip[data-status="learning"]{
+    background:var(--status-learning);
+    color:var(--status-learning-ink);
+    border-color:var(--status-learning);
+  }
+  .chip[data-status="done"]{
+    background:var(--status-done);
+    color:var(--status-done-ink);
+    border-color:var(--status-done);
+  }
+  .chip[data-status="done"]::before{content:"✓ "}
+  .chip[data-status="skip"]{
+    background:transparent;
+    color:var(--status-skip);
+    border-color:var(--status-skip);
+    text-decoration:line-through;
+  }
+
+  .legend{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:8px 0 32px;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;border:1.5px solid var(--status-pending-border)}
+  .legend i.learning{background:var(--status-learning);border-color:var(--status-learning)}
+  .legend i.done{background:var(--status-done);border-color:var(--status-done)}
+  .legend i.skip{background:transparent;border-color:var(--status-skip)}
+
+  footer{
+    color:var(--ink-soft);
+    font-size:12px;
+    text-align:center;
+    padding-top:20px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div class="titleblock">
+      <h1>Quant Roadmap</h1>
+      <p>Личный трекер: C++, математика, теория вероятностей и стохастика на пути к позиции quant developer. Нажми на тему, чтобы отметить её: в процессе, сделано или пропущено.</p>
+    </div>
+    <div class="theme-switch" role="radiogroup" aria-label="Тема оформления">
+      <button type="button" data-mode="light" role="radio">☀ Светлая</button>
+      <button type="button" data-mode="auto" role="radio">Авто</button>
+      <button type="button" data-mode="dark" role="radio">☾ Тёмная</button>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span><i></i> не начато</span>
+    <span><i class="learning"></i> в процессе</span>
+    <span><i class="done"></i> сделано</span>
+    <span><i class="skip"></i> пропущено</span>
+  </div>
+
+  <div class="overall" id="overall"></div>
+
+  <div class="summary-grid" id="summary"></div>
+
+  <div id="tracks"></div>
+
+  <footer>Данные хранятся только в этом браузере (localStorage). На другом устройстве прогресс будет отдельным.</footer>
+</div>
+
+<script>
+const DATA = [
+  {
+    id: "cpp", name: "C++", accent: "--accent-cpp",
+    desc: "Наш курс в том порядке, в каком мы его проходим: тема закрывается практикой, потом следующая. Подробный разбор тем с книгами по уровням — <a href=\"https://salmer.github.io/CppDeveloperRoadmap/\" target=\"_blank\" rel=\"noopener\">роадмап Salmer'а</a> (есть на русском).",
+    groups: [
+      { name: "Основы", topics: [
+        { id:"cpp-intro", label:"Что такое C++ и где он используется", status:"pending" },
+        { id:"cpp-setup", label:"Компилятор и IDE, первая программа", status:"done" },
+        { id:"cpp-io", label:"Ввод/вывод (cin/cout)", status:"done" },
+        { id:"cpp-typing", label:"Статическая типизация (int/double/string)", status:"done" },
+      ]},
+      { name: "Операции и ветвления", topics: [
+        { id:"cpp-arith", label:"Арифметика", status:"done" },
+        { id:"cpp-logic", label:"Логические операторы (&&, ||, !)", status:"done" },
+        { id:"cpp-bitwise", label:"Битовые операции", status:"pending" },
+        { id:"cpp-ifelse", label:"if / else if / else", status:"done" },
+        { id:"cpp-switch", label:"switch / goto", status:"pending" },
+      ]},
+      { name: "Циклы и функции", topics: [
+        { id:"cpp-loops", label:"for / while", status:"done" },
+        { id:"cpp-loop-control", label:"do-while, break / continue", status:"learning" },
+        { id:"cpp-functions", label:"Функции: параметры, возврат", status:"done" },
+        { id:"cpp-overload", label:"Перегрузка функций", status:"learning" },
+        { id:"cpp-lambdas", label:"Лямбды", status:"pending" },
+      ]},
+      { name: "Vector", topics: [
+        { id:"cpp-vector-basics", label:"vector: объявление, индексация, size()", status:"done" },
+        { id:"cpp-vector-practice", label:"Практика: min/max/reverse/search", status:"done" },
+      ]},
+      { name: "Контейнеры-адаптеры и списки", topics: [
+        { id:"cpp-stack", label:"stack (LIFO)", status:"done" },
+        { id:"cpp-queue", label:"queue (FIFO)", status:"done" },
+        { id:"cpp-deque", label:"deque", status:"done" },
+        { id:"cpp-priority-queue", label:"priority_queue", status:"done" },
+        { id:"cpp-list", label:"list", status:"pending" },
+      ]},
+      { name: "Ассоциативные контейнеры", topics: [
+        { id:"cpp-unordered-map", label:"unordered_map", status:"done" },
+        { id:"cpp-map", label:"map (отсортированный)", status:"learning" },
+        { id:"cpp-multimap", label:"multimap", status:"pending" },
+      ]},
+      { name: "ООП", topics: [
+        { id:"cpp-classes", label:"Классы, инкапсуляция, public/private", status:"done" },
+        { id:"cpp-composition", label:"Композиция (vector<Object>)", status:"done" },
+        { id:"cpp-ctor-dtor", label:"Конструкторы и деструкторы", status:"done" },
+        { id:"cpp-inheritance", label:"Наследование, virtual/override", status:"learning" },
+        { id:"cpp-vtable", label:"Динамический полиморфизм и виртуальные таблицы", status:"pending" },
+        { id:"cpp-operator-overload", label:"Перегрузка операторов", status:"pending" },
+        { id:"cpp-rule-of-five", label:"Правило нуля / трёх / пяти", status:"pending" },
+        { id:"cpp-multi-inherit", label:"Множественное наследование", status:"pending" },
+      ]},
+      { name: "Указатели и память", topics: [
+        { id:"cpp-references", label:"Ссылки (&)", status:"pending" },
+        { id:"cpp-memory-model", label:"Модель памяти: стек и куча", status:"pending" },
+        { id:"cpp-pointers", label:"Указатели, this подробно", status:"pending" },
+        { id:"cpp-new-delete", label:"new / delete", status:"pending" },
+        { id:"cpp-lifetime", label:"Время жизни объектов", status:"pending" },
+        { id:"cpp-leaks", label:"Утечки памяти", status:"pending" },
+        { id:"cpp-smart-ptr", label:"unique_ptr / shared_ptr / weak_ptr", status:"pending" },
+      ]},
+      { name: "Организация кода", topics: [
+        { id:"cpp-scope", label:"Область видимости", status:"learning" },
+        { id:"cpp-namespaces", label:"Пространства имён", status:"pending" },
+        { id:"cpp-headers", label:"Заголовочные файлы (.h / .cpp)", status:"pending" },
+        { id:"cpp-forward-decl", label:"Forward declaration", status:"pending" },
+      ]},
+      { name: "Возможности языка", topics: [
+        { id:"cpp-const", label:"const и constexpr", status:"learning" },
+        { id:"cpp-auto", label:"auto (вывод типов)", status:"learning" },
+        { id:"cpp-casts", label:"static_cast и другие приведения типов", status:"pending" },
+        { id:"cpp-ub", label:"Неопределённое поведение (UB)", status:"learning" },
+        { id:"cpp-macros", label:"Макросы и препроцессор", status:"pending" },
+      ]},
+      { name: "Ошибки и исключения", topics: [
+        { id:"cpp-exceptions", label:"Исключения (try / catch / throw)", status:"pending" },
+        { id:"cpp-exit-codes", label:"Коды возврата", status:"pending" },
+      ]},
+      { name: "STL глубже", topics: [
+        { id:"cpp-iterators", label:"Итераторы", status:"pending" },
+        { id:"cpp-algorithms", label:"Алгоритмы STL (sort, find, ...)", status:"pending" },
+        { id:"cpp-chrono", label:"Дата и время (chrono)", status:"pending" },
+        { id:"cpp-threads", label:"Многопоточность", status:"pending" },
+      ]},
+      { name: "Шаблоны", topics: [
+        { id:"cpp-templates", label:"Шаблоны функций и классов", status:"pending" },
+        { id:"cpp-template-spec", label:"Специализация шаблонов", status:"pending" },
+        { id:"cpp-variadic", label:"Variadic templates", status:"pending" },
+        { id:"cpp-sfinae", label:"Type traits и SFINAE", status:"pending" },
+      ]},
+      { name: "Идиомы", topics: [
+        { id:"cpp-raii", label:"RAII", status:"pending" },
+        { id:"cpp-copy-swap", label:"Copy-and-swap", status:"pending" },
+        { id:"cpp-erase-remove", label:"Erase-remove", status:"pending" },
+        { id:"cpp-pimpl", label:"Pimpl", status:"pending" },
+        { id:"cpp-crtp", label:"CRTP", status:"pending" },
+      ]},
+      { name: "Стандарты языка", topics: [
+        { id:"cpp-std11", label:"C++11 / 14", status:"pending" },
+        { id:"cpp-std17", label:"C++17", status:"pending" },
+        { id:"cpp-std20", label:"C++20", status:"pending" },
+        { id:"cpp-std23", label:"C++23", status:"pending" },
+      ]},
+      { name: "Инструменты", topics: [
+        { id:"cpp-compile-stages", label:"Как работает компилятор: этапы сборки", status:"pending" },
+        { id:"cpp-compilers", label:"GCC / Clang / MSVC", status:"pending" },
+        { id:"cpp-debugger", label:"Отладчик: точки останова, пошаговый запуск", status:"pending" },
+        { id:"cpp-cmake", label:"CMake", status:"pending" },
+        { id:"cpp-pkg", label:"Пакетные менеджеры (vcpkg, Conan)", status:"pending" },
+      ]},
+      { name: "Библиотеки", topics: [
+        { id:"cpp-gtest", label:"Тесты: GoogleTest", status:"pending" },
+        { id:"cpp-boost", label:"Boost", status:"pending" },
+        { id:"cpp-fmt", label:"fmt / spdlog", status:"pending" },
+        { id:"cpp-qt", label:"Qt (по желанию)", status:"pending" },
+      ]},
+    ]
+  },
+  {
+    id: "math", name: "Математика", accent: "--accent-math",
+    desc: "Фундамент под вероятность и стохастику: комбинаторика, анализ, линейная алгебра.",
+    groups: [
+      { name: "Комбинаторика", topics: [
+        { id:"math-permutations", label:"Перестановки", status:"pending" },
+        { id:"math-combinations", label:"Сочетания C(n,k)", status:"learning" },
+        { id:"math-product-rule", label:"Правило произведения и суммы", status:"pending" },
+      ]},
+      { name: "Алгебра и функции", topics: [
+        { id:"math-equations", label:"Уравнения и неравенства", status:"pending" },
+        { id:"math-functions", label:"Функции и графики", status:"pending" },
+        { id:"math-logs", label:"Логарифмы и экспоненты", status:"pending" },
+      ]},
+      { name: "Математический анализ", topics: [
+        { id:"math-limits", label:"Пределы", status:"pending" },
+        { id:"math-derivatives", label:"Производные", status:"pending" },
+        { id:"math-integrals", label:"Интегралы (основы)", status:"pending" },
+      ]},
+      { name: "Линейная алгебра", topics: [
+        { id:"math-vectors-matrices", label:"Векторы и матрицы", status:"pending" },
+        { id:"math-linear-systems", label:"Системы линейных уравнений", status:"pending" },
+        { id:"math-eigen", label:"Собственные значения/векторы", status:"pending" },
+      ]},
+      { name: "Ряды и последовательности", topics: [
+        { id:"math-series", label:"Числовые ряды", status:"pending" },
+        { id:"math-convergence", label:"Сходимость", status:"pending" },
+      ]},
+    ]
+  },
+  {
+    id: "prob", name: "Теория вероятностей", accent: "--accent-prob",
+    desc: "От классических задач (монетки, кости) до распределений и предельных теорем — то, что реально спрашивают на quant-собеседованиях.",
+    groups: [
+      { name: "Основы вероятности", topics: [
+        { id:"prob-classical", label:"Классическое определение вероятности", status:"learning" },
+        { id:"prob-events", label:"События и операции над ними", status:"pending" },
+        { id:"prob-conditional", label:"Условная вероятность", status:"pending" },
+        { id:"prob-bayes", label:"Формула Байеса", status:"pending" },
+      ]},
+      { name: "Случайные величины", topics: [
+        { id:"prob-discrete-rv", label:"Дискретные случайные величины", status:"pending" },
+        { id:"prob-continuous-rv", label:"Непрерывные случайные величины", status:"pending" },
+        { id:"prob-expectation", label:"Матожидание и дисперсия", status:"pending" },
+      ]},
+      { name: "Распределения", topics: [
+        { id:"prob-binomial", label:"Биномиальное распределение", status:"pending" },
+        { id:"prob-poisson", label:"Пуассона", status:"pending" },
+        { id:"prob-normal", label:"Нормальное (Гауссово)", status:"pending" },
+        { id:"prob-uniform", label:"Равномерное", status:"pending" },
+      ]},
+      { name: "Предельные теоремы", topics: [
+        { id:"prob-lln", label:"Закон больших чисел", status:"pending" },
+        { id:"prob-clt", label:"Центральная предельная теорема", status:"pending" },
+      ]},
+      { name: "Практика", topics: [
+        { id:"prob-classic-problems", label:"Классические задачи (монетки, кости, носки)", status:"learning" },
+        { id:"prob-combinatorial", label:"Комбинаторные задачи на вероятность", status:"pending" },
+        { id:"prob-interview", label:"Задачи в стиле quant-собеседований", status:"pending" },
+      ]},
+    ]
+  },
+  {
+    id: "stoch", name: "Стохастические процессы", accent: "--accent-stoch",
+    desc: "Марковские цепи, броуновское движение, модель Блэка-Шоулза — самый дальний рубеж, для более позднего этапа.",
+    groups: [
+      { name: "Основы процессов", topics: [
+        { id:"stoch-random-walk", label:"Случайные блуждания", status:"pending" },
+        { id:"stoch-markov", label:"Марковские цепи", status:"pending" },
+        { id:"stoch-stationarity", label:"Стационарность", status:"pending" },
+      ]},
+      { name: "Броуновское движение", topics: [
+        { id:"stoch-wiener", label:"Винеровский процесс", status:"pending" },
+        { id:"stoch-path-properties", label:"Свойства траекторий", status:"pending" },
+      ]},
+      { name: "Стохастическое исчисление", topics: [
+        { id:"stoch-ito", label:"Лемма Ито", status:"pending" },
+        { id:"stoch-sde", label:"Стохастические дифференциальные уравнения", status:"pending" },
+      ]},
+      { name: "Приложения в финансах", topics: [
+        { id:"stoch-black-scholes", label:"Модель Блэка-Шоулза", status:"pending" },
+        { id:"stoch-monte-carlo", label:"Симуляции Монте-Карло", status:"pending" },
+      ]},
+    ]
+  },
+];
+
+const STATUS_ORDER = ["pending","learning","done","skip"];
+const STORAGE_KEY = "quant-roadmap-progress-v1";
+const THEME_KEY = "quant-roadmap-theme";
+
+function loadOverrides(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e){ return {}; }
+}
+function saveOverrides(overrides){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides)); } catch(e){}
+}
+
+let overrides = loadOverrides();
+
+function getStatus(topic){
+  return overrides[topic.id] || topic.status;
+}
+function setStatus(id, status){
+  overrides[id] = status;
+  saveOverrides(overrides);
+}
+function findTopic(id){
+  for(const track of DATA) for(const g of track.groups) for(const t of g.topics) if(t.id === id) return t;
+  return null;
+}
+
+let openMenu = null;
+function closeMenu(){
+  if(openMenu){ openMenu.remove(); openMenu = null; }
+}
+function showMenu(chip){
+  closeMenu();
+  const id = chip.dataset.id;
+  const current = getStatus(findTopic(id));
+  const menu = document.createElement("div");
+  menu.className = "menu";
+  menu.setAttribute("role","menu");
+  const options = [
+    ["learning","В процессе"],
+    ["done","✓ Сделано"],
+    ["skip","✕ Пропустить"],
+    ["pending","Сбросить"],
+  ];
+  options.forEach(([value,label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.set = value;
+    b.textContent = label;
+    b.setAttribute("role","menuitem");
+    if(value === current) b.classList.add("active");
+    b.addEventListener("click", e => {
+      e.stopPropagation();
+      // clicking the active state again resets it, like on roadmap.sh
+      setStatus(id, value === current ? "pending" : value);
+      closeMenu();
+      render();
+      const again = document.querySelector(`.chip[data-id="${id}"]`);
+      if(again) again.focus();
+    });
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const r = chip.getBoundingClientRect();
+  const mw = menu.offsetWidth;
+  let left = r.left + window.scrollX;
+  const maxLeft = window.scrollX + document.documentElement.clientWidth - mw - 8;
+  left = Math.max(window.scrollX + 8, Math.min(left, maxLeft));
+  let top = r.top + window.scrollY - menu.offsetHeight - 6;
+  if(r.top - menu.offsetHeight - 6 < 0) top = r.bottom + window.scrollY + 6;
+  menu.style.left = left + "px";
+  menu.style.top = top + "px";
+  openMenu = menu;
+  const first = menu.querySelector("button");
+  if(first) first.focus();
+}
+document.addEventListener("click", e => {
+  if(openMenu && !openMenu.contains(e.target) && !e.target.closest(".chip")) closeMenu();
+});
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
+window.addEventListener("resize", closeMenu);
+
+function trackStats(track){
+  let done=0, learning=0, pending=0, skip=0, total=0;
+  track.groups.forEach(g => g.topics.forEach(t => {
+    total++;
+    const s = getStatus(t);
+    if(s==="done") done++;
+    else if(s==="learning") learning++;
+    else if(s==="skip") skip++;
+    else pending++;
+  }));
+  return {done, learning, pending, skip, total};
+}
+
+function renderOverall(){
+  let done=0, learning=0, skip=0, total=0;
+  DATA.forEach(track => {
+    const s = trackStats(track);
+    done += s.done; learning += s.learning; skip += s.skip; total += s.total;
+  });
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const w = n => total ? (n / total * 100) : 0;
+  document.getElementById("overall").innerHTML = `
+    <div class="overall-top">
+      <div>
+        <div class="overall-label">Общий прогресс</div>
+        <div class="overall-pct">${pct}%</div>
+      </div>
+      <div class="overall-count">${done} из ${total} тем сделано</div>
+    </div>
+    <div class="bar">
+      <span style="width:${w(done)}%;background:var(--status-done)"></span>
+      <span style="width:${w(learning)}%;background:var(--status-learning)"></span>
+      <span style="width:${w(skip)}%;background:var(--status-skip)"></span>
+    </div>
+    <div class="overall-breakdown">
+      <span>сделано: ${done}</span>
+      <span>в процессе: ${learning}</span>
+      <span>пропущено: ${skip}</span>
+      <span>не начато: ${total - done - learning - skip}</span>
+    </div>
+  `;
+}
+
+function renderSummary(){
+  const el = document.getElementById("summary");
+  el.innerHTML = DATA.map(track => {
+    const s = trackStats(track);
+    const pct = s.total ? Math.round((s.done / s.total) * 100) : 0;
+    const doneW = s.total ? (s.done/s.total*100) : 0;
+    const learnW = s.total ? (s.learning/s.total*100) : 0;
+    const skipW = s.total ? (s.skip/s.total*100) : 0;
+    return `
+      <div class="summary-card">
+        <div class="name" style="color:var(${track.accent})">${track.name}</div>
+        <div class="pct">${pct}% <span style="font-size:12px;color:var(--ink-soft)">${s.done}/${s.total}</span></div>
+        <div class="bar">
+          <span style="width:${doneW}%;background:var(--status-done)"></span>
+          <span style="width:${learnW}%;background:var(--status-learning)"></span>
+          <span style="width:${skipW}%;background:var(--status-skip)"></span>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderTracks(){
+  const el = document.getElementById("tracks");
+  el.innerHTML = DATA.map(track => { const st = trackStats(track); return `
+    <section class="track">
+      <div class="track-head">
+        <span class="dot" style="background:var(${track.accent})"></span>
+        <h2 style="color:var(${track.accent})">${track.name}</h2>
+        <span class="track-count">${st.done} / ${st.total}</span>
+      </div>
+      <p class="track-desc">${track.desc}</p>
+      ${track.groups.map(group => `
+        <div class="group">
+          <div class="group-name">${group.name}</div>
+          <div class="chips">
+            ${group.topics.map(t => {
+              const s = getStatus(t);
+              return `<button type="button" class="chip" data-status="${s}" data-id="${t.id}" data-default="${t.status}">${t.label}</button>`;
+            }).join("")}
+          </div>
+        </div>
+      `).join("")}
+    </section>
+  `; }).join("");
+
+  el.querySelectorAll(".chip").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      if(openMenu && openMenu.dataset.for === btn.dataset.id){ closeMenu(); return; }
+      showMenu(btn);
+      openMenu.dataset.for = btn.dataset.id;
+    });
+  });
+}
+
+function render(){
+  renderOverall();
+  renderSummary();
+  renderTracks();
+}
+
+function initTheme(){
+  const buttons = document.querySelectorAll(".theme-switch button");
+  function apply(mode){
+    if(mode === "light" || mode === "dark"){
+      document.documentElement.setAttribute("data-theme", mode);
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    buttons.forEach(b => b.setAttribute("aria-checked", b.dataset.mode === mode ? "true" : "false"));
+  }
+  let mode = "auto";
+  try { mode = localStorage.getItem(THEME_KEY) || "auto"; } catch(e){}
+  apply(mode);
+  buttons.forEach(b => b.addEventListener("click", () => {
+    mode = b.dataset.mode;
+    try { localStorage.setItem(THEME_KEY, mode); } catch(e){}
+    apply(mode);
+  }));
+}
+
+initTheme();
+render();
+</script>
+</body>
+</html>
