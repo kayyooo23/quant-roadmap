@@ -299,6 +299,53 @@
   .menu button.active[data-set="done"]{background:#16a34a;color:#fff}
   .menu button.active[data-set="skip"]{background:#1d1d1b;color:#fff}
 
+  .sync{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:16px;
+    font-size:14px;
+  }
+  .sync summary{
+    cursor:pointer;
+    padding:12px 16px;
+    display:flex;justify-content:space-between;gap:12px;align-items:center;
+    list-style:none;
+  }
+  .sync summary::-webkit-details-marker{display:none}
+  .sync summary .s-title{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
+  .sync summary .s-state{font-size:13px;color:var(--ink-soft);text-align:right}
+  .sync summary .s-state.ok{color:#16a34a}
+  .sync summary .s-state.err{color:#c2410c}
+  .sync-body{padding:0 16px 16px;display:grid;gap:10px}
+  .sync-body p{margin:0;color:var(--ink-soft);font-size:13px;max-width:70ch}
+  .sync-body label{display:grid;gap:4px;font-size:12.5px;color:var(--ink-soft)}
+  .sync-body input{
+    font:inherit;font-size:14px;
+    padding:8px 10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--bg);
+    color:var(--ink);
+    width:100%;
+  }
+  .sync-body input:focus-visible{outline:2px solid var(--line);outline-offset:1px}
+  .sync-fields{display:grid;grid-template-columns:2fr 1fr 1.4fr;gap:10px}
+  @media (max-width:640px){ .sync-fields{grid-template-columns:1fr} }
+  .sync-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .sync-actions button{
+    font:inherit;font-size:13px;
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--bg);
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .sync-actions button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .sync-actions button:disabled{opacity:.5;cursor:default}
+  .sync-actions button:focus-visible{outline:2px solid var(--line);outline-offset:2px}
+
   footer{color:var(--ink-soft);font-size:12px;text-align:center;padding-top:28px}
   @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 </style>
@@ -319,6 +366,26 @@
   </header>
 
   <div class="overall" id="overall"></div>
+
+  <details class="sync" id="sync">
+    <summary><span class="s-title">Синхронизация с Goalbar</span><span class="s-state" id="sync-state">не подключено</span></summary>
+    <div class="sync-body">
+      <p>Отметки уходят на сервер Goalbar, оттуда их берёт виджет на телефоне и Telegram-бот. Адрес, пользователь и ключ хранятся только в этом браузере, в коде сайта их нет.</p>
+      <div class="sync-fields">
+        <label for="sync-server">Адрес сервера
+          <input id="sync-server" type="url" placeholder="https://goalbar.….workers.dev" autocomplete="off" spellcheck="false"></label>
+        <label for="sync-user">Пользователь
+          <input id="sync-user" type="text" autocomplete="off" spellcheck="false"></label>
+        <label for="sync-token">Ключ (TOKEN)
+          <input id="sync-token" type="password" autocomplete="off"></label>
+      </div>
+      <div class="sync-actions">
+        <button type="button" class="primary" id="sync-push">Подключить и отправить мои отметки</button>
+        <button type="button" id="sync-pull">Подключить и взять отметки с сервера</button>
+        <button type="button" id="sync-off">Отключить</button>
+      </div>
+    </div>
+  </details>
 
   <div class="tabs" id="tabs" role="tablist"></div>
 
@@ -554,7 +621,7 @@ function saveOverrides(o){
 let overrides = loadOverrides();
 
 function getStatus(topic){ return overrides[topic.id] || topic.status; }
-function setStatus(id, status){ overrides[id] = status; saveOverrides(overrides); }
+function setStatus(id, status){ overrides[id] = status; saveOverrides(overrides); queueSync(id); }
 function findTopic(id){
   for(const track of DATA) for(const g of track.groups) for(const t of g.topics) if(t.id === id) return t;
   return null;
@@ -794,8 +861,165 @@ function initTheme(){
   }));
 }
 
+// ---------- sync with the Goalbar server ----------
+// The server is the shared copy: the phone widget and the Telegram bot read it.
+// Local marks are sent first and only then replaced by the server's copy,
+// so nothing clicked offline gets lost.
+const SYNC_KEY = "quant-roadmap-sync";
+const PENDING_KEY = "quant-roadmap-sync-pending";
+const ALL_IDS = DATA.flatMap(t => t.groups.flatMap(g => g.topics.map(x => x.id)));
+
+function readJSON(key, fallback){
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch(e){ return fallback; }
+}
+function writeJSON(key, value){
+  try { if(value === null) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(value)); } catch(e){}
+}
+let syncConfig = readJSON(SYNC_KEY, null);
+let pending = new Set(readJSON(PENDING_KEY, []));
+let syncBusy = false;
+
+function setSyncState(text, kind){
+  const el = document.getElementById("sync-state");
+  el.textContent = text;
+  el.className = "s-state" + (kind ? " " + kind : "");
+}
+function timeNow(){
+  return new Date().toLocaleTimeString("ru-RU", {hour:"2-digit", minute:"2-digit"});
+}
+function progressUrl(cfg){
+  return cfg.server.replace(/\/+$/, "") + "/progress?u=" + encodeURIComponent(cfg.user);
+}
+
+function explain(status, body){
+  if(status === 401) return "неверный ключ";
+  if(status === 404 && body && body.error === "unknown step_id"){
+    return "на сервере нет части тем — залей новый план";
+  }
+  if(status === 0) return "нет связи с сервером";
+  return "ошибка сервера (" + status + ")";
+}
+
+async function request(cfg, method, body){
+  let res;
+  try {
+    res = await fetch(progressUrl(cfg), {
+      method,
+      headers: body ? {"Content-Type":"application/json", "Authorization":"Bearer " + cfg.token} : {},
+      body: body ? JSON.stringify(body) : undefined,
+      cache: "no-store",
+    });
+  } catch(e){
+    return {ok:false, status:0};
+  }
+  let data = null;
+  try { data = await res.json(); } catch(e){}
+  return {ok: res.ok, status: res.status, data};
+}
+
+function applyServerState(data){
+  if(!data || !Array.isArray(data.subgoals)) return false;
+  const known = new Set(ALL_IDS);
+  for(const sub of data.subgoals){
+    for(const step of sub.steps || []){
+      if(!known.has(step.id) || pending.has(step.id)) continue;
+      overrides[step.id] = step.state || (step.done ? "done" : "pending");
+    }
+  }
+  saveOverrides(overrides);
+  return true;
+}
+
+async function pushIds(ids){
+  const updates = ids.map(id => ({step_id:id, state:getStatus(findTopic(id))}));
+  const r = await request(syncConfig, "POST", {updates});
+  if(r.ok){
+    // a topic clicked again while the request was in flight stays queued
+    updates.forEach(u => { if(getStatus(findTopic(u.step_id)) === u.state) pending.delete(u.step_id); });
+    writeJSON(PENDING_KEY, [...pending]);
+  }
+  return r;
+}
+
+async function flush(){
+  if(!syncConfig || syncBusy || pending.size === 0) return;
+  syncBusy = true;
+  setSyncState("отправляю…");
+  const r = await pushIds([...pending]);
+  syncBusy = false;
+  if(r.ok) setSyncState("синхронизировано · " + timeNow(), "ok");
+  else setSyncState("не отправлено: " + explain(r.status, r.data), "err");
+  if(r.ok && pending.size > 0) flush();
+}
+
+function queueSync(id){
+  if(!syncConfig) return;
+  pending.add(id);
+  writeJSON(PENDING_KEY, [...pending]);
+  flush();
+}
+
+async function pull(){
+  if(!syncConfig) return;
+  const r = await request(syncConfig, "GET");
+  if(r.ok && applyServerState(r.data)){
+    render();
+    setSyncState("синхронизировано · " + timeNow(), "ok");
+  } else {
+    setSyncState("не загружено: " + explain(r.ok ? 500 : r.status, r.data), "err");
+  }
+}
+
+function readForm(){
+  const server = document.getElementById("sync-server").value.trim();
+  const user = document.getElementById("sync-user").value.trim();
+  const token = document.getElementById("sync-token").value.trim();
+  if(!/^(https:\/\/|http:\/\/(localhost|127\.0\.0\.1)[:/])/.test(server) || !user || !token){
+    setSyncState("заполни адрес (https://…), пользователя и ключ", "err");
+    return null;
+  }
+  return {server, user, token};
+}
+
+function initSync(){
+  const $ = id => document.getElementById(id);
+  if(syncConfig){
+    $("sync-server").value = syncConfig.server;
+    $("sync-user").value = syncConfig.user;
+    $("sync-token").value = syncConfig.token;
+  }
+  $("sync-push").addEventListener("click", async () => {
+    const cfg = readForm(); if(!cfg) return;
+    syncConfig = cfg; writeJSON(SYNC_KEY, cfg);
+    // every topic goes up once, so the server matches this browser exactly
+    ALL_IDS.forEach(id => pending.add(id));
+    writeJSON(PENDING_KEY, [...pending]);
+    await flush();
+    if(pending.size === 0) await pull();
+  });
+  $("sync-pull").addEventListener("click", async () => {
+    const cfg = readForm(); if(!cfg) return;
+    syncConfig = cfg; writeJSON(SYNC_KEY, cfg);
+    pending.clear(); writeJSON(PENDING_KEY, []);
+    setSyncState("загружаю…");
+    await pull();
+  });
+  $("sync-off").addEventListener("click", () => {
+    syncConfig = null; writeJSON(SYNC_KEY, null);
+    pending.clear(); writeJSON(PENDING_KEY, []);
+    ["sync-server","sync-user","sync-token"].forEach(id => { $(id).value = ""; });
+    setSyncState("не подключено");
+  });
+  if(syncConfig){
+    setSyncState("подключаюсь…");
+    // unsent local marks first, then the server's copy
+    flush().then(pull);
+  }
+}
+
 initTheme();
 render();
+initSync();
 let resizeTimer;
 let lastWidth = window.innerWidth;
 window.addEventListener("resize", () => {
