@@ -7,66 +7,59 @@
 <meta name="description" content="Личный трекер прогресса по C++, математике, теории вероятностей и стохастике на пути к позиции quant developer.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     color-scheme: light;
-    --bg:#f6f3ec;
+    --bg:#f7f7f5;
     --surface:#ffffff;
-    --ink:#232019;
-    --ink-soft:#6b6455;
-    --border:#ded7c6;
+    --ink:#1d1d1b;
+    --ink-soft:#66645c;
+    --border:#dcdad2;
+    --line:#2b78e4;
     --accent-cpp:#2f5fae;
     --accent-math:#1f7a6c;
     --accent-prob:#b9542c;
     --accent-stoch:#7a4fb5;
-    --status-learning:#c9922f;
-    --status-learning-ink:#4a3410;
-    --status-done:#2f9e44;
-    --status-done-ink:#ffffff;
-    --status-skip:#a85a56;
-    --status-skip-ink:#ffffff;
-    --status-pending-border:#c9c1ad;
+    /* node colours are the same in both themes, like on a paper map */
+    --node-main:#fdff00;
+    --node-sub:#ffe599;
+    --node-sub-hover:#f3c950;
+    --node-learning:#dad1fd;
+    --node-done:#cbcbcb;
+    --node-skip:#496b69;
+    --node-ink:#000000;
+    --bar-empty:#dcdad2;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       color-scheme: dark;
-      --bg:#14171c;
-      --surface:#1c2028;
-      --ink:#e8e4da;
-      --ink-soft:#a29a8c;
-      --border:#333a45;
+      --bg:#15171b;
+      --surface:#1d2026;
+      --ink:#ebe8e0;
+      --ink-soft:#a39d91;
+      --border:#343942;
+      --line:#5b9bf0;
       --accent-cpp:#6c93e0;
       --accent-math:#4fb39d;
       --accent-prob:#e08a52;
       --accent-stoch:#a685d9;
-      --status-learning:#e0ac4f;
-      --status-learning-ink:#2a1c05;
-      --status-done:#4cc26a;
-      --status-done-ink:#0a1a0d;
-      --status-skip:#c97c77;
-      --status-skip-ink:#2a0d0b;
-      --status-pending-border:#3d4553;
+      --bar-empty:#343942;
     }
   }
   :root[data-theme="dark"]{
     color-scheme: dark;
-    --bg:#14171c;
-    --surface:#1c2028;
-    --ink:#e8e4da;
-    --ink-soft:#a29a8c;
-    --border:#333a45;
+    --bg:#15171b;
+    --surface:#1d2026;
+    --ink:#ebe8e0;
+    --ink-soft:#a39d91;
+    --border:#343942;
+    --line:#5b9bf0;
     --accent-cpp:#6c93e0;
     --accent-math:#4fb39d;
     --accent-prob:#e08a52;
     --accent-stoch:#a685d9;
-    --status-learning:#e0ac4f;
-    --status-learning-ink:#2a1c05;
-    --status-done:#4cc26a;
-    --status-done-ink:#0a1a0d;
-    --status-skip:#c97c77;
-    --status-skip-ink:#2a0d0b;
-    --status-pending-border:#3d4553;
+    --bar-empty:#343942;
   }
 
   *{box-sizing:border-box}
@@ -74,34 +67,27 @@
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
-    padding: 0 16px 64px;
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    padding:0 16px 64px;
   }
-  .wrap{max-width:920px;margin:0 auto}
+  .wrap{max-width:1040px;margin:0 auto}
 
   header.page-head{
-    padding:36px 0 20px;
+    padding:32px 0 18px;
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
     gap:16px;
     flex-wrap:wrap;
-    border-bottom:1px solid var(--border);
-    margin-bottom:28px;
   }
   .titleblock h1{
     font-family:"IBM Plex Mono",monospace;
     font-size:26px;
     margin:0 0 6px;
-    text-wrap:balance;
     letter-spacing:-0.01em;
   }
-  .titleblock p{
-    margin:0;
-    color:var(--ink-soft);
-    font-size:14px;
-    max-width:56ch;
-  }
+  .titleblock p{margin:0;color:var(--ink-soft);font-size:14px;max-width:60ch}
+
   .theme-switch{
     display:inline-flex;
     background:var(--surface);
@@ -122,224 +108,199 @@
   .theme-switch button:last-child{border-right:0}
   .theme-switch button:hover{color:var(--ink)}
   .theme-switch button[aria-checked="true"]{background:var(--ink);color:var(--bg)}
-  .theme-switch button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 
   .overall{
     background:var(--surface);
     border:1px solid var(--border);
-    border-radius:14px;
-    padding:20px 22px;
-    margin-bottom:14px;
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:16px;
   }
-  .overall-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    gap:12px;
-    flex-wrap:wrap;
+  .overall-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .overall-label{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
+  .overall-pct{font-family:"IBM Plex Mono",monospace;font-size:32px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+  .overall-count{font-size:14px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .bar{height:8px;border-radius:4px;background:var(--bar-empty);overflow:hidden;display:flex}
+  .bar span{height:100%}
+  .overall-breakdown{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+  .tabs{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
     margin-bottom:12px;
   }
-  .overall-label{
-    font-family:"IBM Plex Mono",monospace;
-    font-size:12px;
-    letter-spacing:.04em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-  }
-  .overall-pct{
-    font-family:"IBM Plex Mono",monospace;
-    font-size:34px;
-    font-weight:600;
-    font-variant-numeric:tabular-nums;
-    line-height:1;
-  }
-  .overall-count{
-    font-size:14px;
-    color:var(--ink-soft);
-    font-variant-numeric:tabular-nums;
-  }
-  .overall .bar{height:10px;border-radius:5px}
-  .overall-breakdown{
-    display:flex;
-    gap:16px;
-    flex-wrap:wrap;
-    margin-top:10px;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    font-variant-numeric:tabular-nums;
-  }
-
-  .track-count{
-    margin-left:auto;
-    font-family:"IBM Plex Mono",monospace;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    font-variant-numeric:tabular-nums;
-  }
-
-  .menu{
-    position:absolute;
-    z-index:20;
-    display:flex;
+  @media (max-width:640px){ .tabs{grid-template-columns:repeat(2,1fr)} }
+  .tab{
+    text-align:left;
     background:var(--surface);
     border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 12px;
+    cursor:pointer;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .tab .t-name{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:6px}
+  .tab .t-num{font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;display:block;margin-bottom:6px}
+  .tab .bar{height:5px}
+  .tab[aria-selected="true"]{border-color:currentColor;box-shadow:inset 0 0 0 1px currentColor}
+  .tab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  .legend{
+    display:flex;gap:16px;flex-wrap:wrap;
+    font-size:12.5px;color:var(--ink-soft);
+    margin:4px 0 8px;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:16px;height:12px;border:2px solid #000;border-radius:3px;display:inline-block}
+
+  /* ---------- the map ---------- */
+  .rm{
+    position:relative;
+    padding:8px 0 24px;
+  }
+  .rm-lines{
+    position:absolute;
+    left:0;top:0;
+    pointer-events:none;
+    z-index:0;
+    overflow:visible;
+  }
+  .rm-lines path{fill:none;stroke:var(--line)}
+  .rm-lines .spine{stroke-width:3.5}
+  .rm-lines .branch{stroke-width:3;stroke-dasharray:0.1 8;stroke-linecap:round}
+
+  .rm-start{
+    display:flex;justify-content:center;
+    padding:20px 0 8px;
+  }
+  .rm-start .title-node{
+    font-family:"Balsamiq Sans","Comic Sans MS",cursive;
+    font-size:30px;font-weight:700;
+    color:var(--ink);
+    position:relative;z-index:1;
+    background:var(--bg);
+    padding:0 10px;
+  }
+
+  .rm-row{
+    display:grid;
+    grid-template-columns:1fr 250px 1fr;
+    column-gap:64px;
+    align-items:center;
+    padding:26px 0;
+  }
+  .rm-subs{
+    display:flex;flex-direction:column;gap:8px;
+    width:100%;max-width:290px;
+  }
+  .rm-row.left .rm-subs{grid-column:1;justify-self:end}
+  .rm-row.left .rm-main{grid-column:2;grid-row:1}
+  .rm-row.right .rm-subs{grid-column:3;justify-self:start}
+  .rm-row.right .rm-main{grid-column:2;grid-row:1}
+  .rm-main{display:flex;justify-content:center}
+  .rm-row.shift-a .rm-main .node{transform:translateX(-34px)}
+  .rm-row.shift-b .rm-main .node{transform:translateX(34px)}
+
+  .node{
+    position:relative;z-index:1;
+    font-family:"Balsamiq Sans","Comic Sans MS",cursive;
+    color:var(--node-ink);
+    border:2.5px solid #000;
+    border-radius:6px;
+    text-align:center;
+    line-height:1.25;
+  }
+  .node.main{
+    background:var(--node-main);
+    font-size:16.5px;
+    padding:11px 16px;
+    min-width:220px;
+    max-width:250px;
+  }
+  .node.main small{
+    display:inline-block;
+    width:100%;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    color:#3d3d3d;
+    margin-top:3px;
+  }
+  .node.sub{
+    background:var(--node-sub);
+    font-size:14.5px;
+    padding:8px 12px;
+    cursor:pointer;
+    width:100%;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .node.sub:hover{background:var(--node-sub-hover)}
+  .node[data-status="learning"]{background:var(--node-learning);text-decoration:underline;text-underline-offset:3px}
+  .node[data-status="done"]{background:var(--node-done);text-decoration:line-through}
+  .node[data-status="skip"]{background:var(--node-skip);color:#fff;text-decoration:line-through}
+  .node.main[data-status="skip"] small{color:#e6e6e6}
+  .node.sub[data-status]:not([data-status="pending"]):hover{filter:brightness(0.94)}
+  .node.sub:focus-visible{outline:3px solid var(--line);outline-offset:3px}
+
+  .rm-end{display:flex;justify-content:center;padding-top:26px}
+  .next-track{
+    position:relative;z-index:1;
+    font-family:"Balsamiq Sans","Comic Sans MS",cursive;
+    font-size:15px;
+    background:var(--surface);
+    color:var(--ink);
+    border:2px dashed var(--line);
     border-radius:8px;
-    box-shadow:0 6px 20px rgba(0,0,0,.18);
+    padding:10px 16px;
+    cursor:pointer;
+  }
+  .next-track:hover{background:var(--bg)}
+
+  .track-desc{color:var(--ink-soft);font-size:13.5px;max-width:70ch;margin:6px auto 0;text-align:center}
+  .track-desc a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+  /* phones: one column, main nodes on the left, topics indented under them */
+  @media (max-width:760px){
+    .rm-row{grid-template-columns:1fr;row-gap:12px;padding:16px 0}
+    .rm-row .rm-main, .rm-row.left .rm-main, .rm-row.right .rm-main{grid-column:1;grid-row:1;justify-content:flex-start}
+    .rm-row .rm-subs, .rm-row.left .rm-subs, .rm-row.right .rm-subs{grid-column:1;grid-row:2;justify-self:stretch;max-width:none;padding-left:40px}
+    .rm-row.shift-a .rm-main .node, .rm-row.shift-b .rm-main .node{transform:none}
+    .node.main{max-width:none;width:100%;text-align:left}
+    .node.sub{text-align:left}
+    .rm-start{justify-content:flex-start}
+    .rm-end{justify-content:flex-start}
+    .track-desc{text-align:left;margin-left:0}
+  }
+
+  /* status menu, same idea as roadmap.sh */
+  .menu{
+    position:absolute;z-index:20;display:flex;
+    background:#fff;
+    border:1.5px solid #000;
+    border-radius:8px;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);
     overflow:hidden;
   }
   .menu button{
-    font-family:inherit;
-    font-size:12.5px;
-    background:transparent;
-    border:0;
-    border-right:1px solid var(--border);
-    color:var(--ink);
-    padding:8px 11px;
+    font-family:"IBM Plex Sans",sans-serif;
+    font-size:13px;
+    background:#fff;
+    border:0;border-right:1px solid #d6d6d6;
+    color:#1d1d1b;
+    padding:8px 12px;
     cursor:pointer;
     white-space:nowrap;
   }
   .menu button:last-child{border-right:0}
-  .menu button:hover,.menu button:focus-visible{background:var(--bg);outline:none}
-  .menu button.active[data-set="learning"]{background:var(--status-learning);color:var(--status-learning-ink)}
-  .menu button.active[data-set="done"]{background:var(--status-done);color:var(--status-done-ink)}
-  .menu button.active[data-set="skip"]{background:var(--status-skip);color:var(--status-skip-ink)}
-  .chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .menu button:hover,.menu button:focus-visible{background:#f1f1f1;outline:none}
+  .menu button.active[data-set="learning"]{background:#7c5cd6;color:#fff}
+  .menu button.active[data-set="done"]{background:#16a34a;color:#fff}
+  .menu button.active[data-set="skip"]{background:#1d1d1b;color:#fff}
 
-  .summary-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:12px;
-    margin-bottom:40px;
-  }
-  @media (max-width:700px){
-    .summary-grid{grid-template-columns:repeat(2,1fr)}
-  }
-  .summary-card{
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:14px 16px;
-  }
-  .summary-card .name{
-    font-family:"IBM Plex Mono",monospace;
-    font-size:12px;
-    letter-spacing:.03em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-bottom:8px;
-  }
-  .summary-card .pct{
-    font-family:"IBM Plex Mono",monospace;
-    font-size:22px;
-    font-variant-numeric:tabular-nums;
-    margin-bottom:8px;
-  }
-  .bar{
-    height:6px;
-    border-radius:3px;
-    background:var(--status-pending-border);
-    overflow:hidden;
-    display:flex;
-  }
-  .bar span{height:100%}
-
-  .track{
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:24px 24px 8px;
-    margin-bottom:28px;
-  }
-  .track-head{
-    display:flex;
-    align-items:baseline;
-    gap:10px;
-    margin-bottom:6px;
-    flex-wrap:wrap;
-  }
-  .track-head .dot{
-    width:10px;height:10px;border-radius:50%;
-    display:inline-block;
-    flex:none;
-  }
-  .track-head h2{
-    font-family:"IBM Plex Mono",monospace;
-    font-size:18px;
-    margin:0;
-  }
-  .track-desc a{color:inherit;text-decoration:underline;text-underline-offset:2px}
-  .track-desc{
-    color:var(--ink-soft);
-    font-size:13.5px;
-    margin:0 0 20px;
-    max-width:70ch;
-  }
-  .group{margin-bottom:18px}
-  .group-name{
-    font-family:"IBM Plex Mono",monospace;
-    font-size:11.5px;
-    letter-spacing:.04em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-bottom:10px;
-  }
-  .chips{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-  }
-  .chip{
-    font-size:13.5px;
-    line-height:1.3;
-    padding:7px 12px;
-    border-radius:8px;
-    border:1.5px solid var(--status-pending-border);
-    background:transparent;
-    color:var(--ink);
-    cursor:pointer;
-    text-align:left;
-    font-family:inherit;
-    transition:transform .08s ease;
-  }
-  .chip:active{transform:scale(0.97)}
-  .chip[data-status="learning"]{
-    background:var(--status-learning);
-    color:var(--status-learning-ink);
-    border-color:var(--status-learning);
-  }
-  .chip[data-status="done"]{
-    background:var(--status-done);
-    color:var(--status-done-ink);
-    border-color:var(--status-done);
-  }
-  .chip[data-status="done"]::before{content:"✓ "}
-  .chip[data-status="skip"]{
-    background:transparent;
-    color:var(--status-skip);
-    border-color:var(--status-skip);
-    text-decoration:line-through;
-  }
-
-  .legend{
-    display:flex;
-    gap:18px;
-    flex-wrap:wrap;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    margin:8px 0 32px;
-  }
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;border:1.5px solid var(--status-pending-border)}
-  .legend i.learning{background:var(--status-learning);border-color:var(--status-learning)}
-  .legend i.done{background:var(--status-done);border-color:var(--status-done)}
-  .legend i.skip{background:transparent;border-color:var(--status-skip)}
-
-  footer{
-    color:var(--ink-soft);
-    font-size:12px;
-    text-align:center;
-    padding-top:20px;
-  }
+  footer{color:var(--ink-soft);font-size:12px;text-align:center;padding-top:28px}
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 </style>
 </head>
 <body>
@@ -348,7 +309,7 @@
   <header class="page-head">
     <div class="titleblock">
       <h1>Quant Roadmap</h1>
-      <p>Личный трекер: C++, математика, теория вероятностей и стохастика на пути к позиции quant developer. Нажми на тему, чтобы отметить её: в процессе, сделано или пропущено.</p>
+      <p>C++, математика, теория вероятностей и стохастика на пути к позиции quant developer. Нажми на тему, чтобы отметить её: в процессе, сделано или пропущено.</p>
     </div>
     <div class="theme-switch" role="radiogroup" aria-label="Тема оформления">
       <button type="button" data-mode="light" role="radio">☀ Светлая</button>
@@ -357,20 +318,20 @@
     </div>
   </header>
 
-  <div class="legend">
-    <span><i></i> не начато</span>
-    <span><i class="learning"></i> в процессе</span>
-    <span><i class="done"></i> сделано</span>
-    <span><i class="skip"></i> пропущено</span>
-  </div>
-
   <div class="overall" id="overall"></div>
 
-  <div class="summary-grid" id="summary"></div>
+  <div class="tabs" id="tabs" role="tablist"></div>
 
-  <div id="tracks"></div>
+  <div class="legend">
+    <span><i style="background:var(--node-sub)"></i> не начато</span>
+    <span><i style="background:var(--node-learning)"></i> в процессе</span>
+    <span><i style="background:var(--node-done)"></i> сделано</span>
+    <span><i style="background:var(--node-skip)"></i> пропущено</span>
+  </div>
 
-  <footer>Данные хранятся только в этом браузере (localStorage). На другом устройстве прогресс будет отдельным.</footer>
+  <div class="rm" id="rm"></div>
+
+  <footer>Отметки хранятся в этом браузере (localStorage). На другом устройстве прогресс будет свой.</footer>
 </div>
 
 <script>
@@ -578,202 +539,249 @@ const DATA = [
   },
 ];
 
-const STATUS_ORDER = ["pending","learning","done","skip"];
 const STORAGE_KEY = "quant-roadmap-progress-v1";
 const THEME_KEY = "quant-roadmap-theme";
+const TAB_KEY = "quant-roadmap-tab";
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 function loadOverrides(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch(e){ return {}; }
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {}; }
+  catch(e){ return {}; }
 }
-function saveOverrides(overrides){
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides)); } catch(e){}
+function saveOverrides(o){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(o)); } catch(e){}
 }
-
 let overrides = loadOverrides();
 
-function getStatus(topic){
-  return overrides[topic.id] || topic.status;
-}
-function setStatus(id, status){
-  overrides[id] = status;
-  saveOverrides(overrides);
-}
+function getStatus(topic){ return overrides[topic.id] || topic.status; }
+function setStatus(id, status){ overrides[id] = status; saveOverrides(overrides); }
 function findTopic(id){
   for(const track of DATA) for(const g of track.groups) for(const t of g.topics) if(t.id === id) return t;
   return null;
 }
 
-let openMenu = null;
-function closeMenu(){
-  if(openMenu){ openMenu.remove(); openMenu = null; }
+function countTopics(topics){
+  const c = {done:0, learning:0, skip:0, pending:0, total:topics.length};
+  topics.forEach(t => { c[getStatus(t)]++; });
+  return c;
 }
-function showMenu(chip){
-  closeMenu();
-  const id = chip.dataset.id;
-  const current = getStatus(findTopic(id));
-  const menu = document.createElement("div");
-  menu.className = "menu";
-  menu.setAttribute("role","menu");
-  const options = [
-    ["learning","В процессе"],
-    ["done","✓ Сделано"],
-    ["skip","✕ Пропустить"],
-    ["pending","Сбросить"],
-  ];
-  options.forEach(([value,label]) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.dataset.set = value;
-    b.textContent = label;
-    b.setAttribute("role","menuitem");
-    if(value === current) b.classList.add("active");
-    b.addEventListener("click", e => {
-      e.stopPropagation();
-      // clicking the active state again resets it, like on roadmap.sh
-      setStatus(id, value === current ? "pending" : value);
-      closeMenu();
-      render();
-      const again = document.querySelector(`.chip[data-id="${id}"]`);
-      if(again) again.focus();
-    });
-    menu.appendChild(b);
-  });
-  document.body.appendChild(menu);
-  const r = chip.getBoundingClientRect();
-  const mw = menu.offsetWidth;
-  let left = r.left + window.scrollX;
-  const maxLeft = window.scrollX + document.documentElement.clientWidth - mw - 8;
-  left = Math.max(window.scrollX + 8, Math.min(left, maxLeft));
-  let top = r.top + window.scrollY - menu.offsetHeight - 6;
-  if(r.top - menu.offsetHeight - 6 < 0) top = r.bottom + window.scrollY + 6;
-  menu.style.left = left + "px";
-  menu.style.top = top + "px";
-  openMenu = menu;
-  const first = menu.querySelector("button");
-  if(first) first.focus();
-}
-document.addEventListener("click", e => {
-  if(openMenu && !openMenu.contains(e.target) && !e.target.closest(".chip")) closeMenu();
-});
-document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
-window.addEventListener("resize", closeMenu);
-
 function trackStats(track){
-  let done=0, learning=0, pending=0, skip=0, total=0;
-  track.groups.forEach(g => g.topics.forEach(t => {
-    total++;
-    const s = getStatus(t);
-    if(s==="done") done++;
-    else if(s==="learning") learning++;
-    else if(s==="skip") skip++;
-    else pending++;
-  }));
-  return {done, learning, pending, skip, total};
+  return countTopics(track.groups.flatMap(g => g.topics));
 }
+// a topic group gets its colour from its topics
+function groupStatus(group){
+  const c = countTopics(group.topics);
+  if(c.done + c.skip === c.total) return c.done > 0 ? "done" : "skip";
+  if(c.done > 0 || c.learning > 0) return "learning";
+  return "pending";
+}
+
+let activeTrack = "cpp";
+try { const t = localStorage.getItem(TAB_KEY); if(t && DATA.some(d => d.id === t)) activeTrack = t; } catch(e){}
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 function renderOverall(){
-  let done=0, learning=0, skip=0, total=0;
-  DATA.forEach(track => {
-    const s = trackStats(track);
-    done += s.done; learning += s.learning; skip += s.skip; total += s.total;
-  });
-  const pct = total ? Math.round(done / total * 100) : 0;
-  const w = n => total ? (n / total * 100) : 0;
+  const all = countTopics(DATA.flatMap(t => t.groups.flatMap(g => g.topics)));
+  const pct = all.total ? Math.round(all.done / all.total * 100) : 0;
+  const w = n => all.total ? (n / all.total * 100) : 0;
   document.getElementById("overall").innerHTML = `
     <div class="overall-top">
       <div>
         <div class="overall-label">Общий прогресс</div>
         <div class="overall-pct">${pct}%</div>
       </div>
-      <div class="overall-count">${done} из ${total} тем сделано</div>
+      <div class="overall-count">${all.done} из ${all.total} тем сделано</div>
     </div>
     <div class="bar">
-      <span style="width:${w(done)}%;background:var(--status-done)"></span>
-      <span style="width:${w(learning)}%;background:var(--status-learning)"></span>
-      <span style="width:${w(skip)}%;background:var(--status-skip)"></span>
+      <span style="width:${w(all.done)}%;background:#16a34a"></span>
+      <span style="width:${w(all.learning)}%;background:#9b83e6"></span>
+      <span style="width:${w(all.skip)}%;background:var(--node-skip)"></span>
     </div>
     <div class="overall-breakdown">
-      <span>сделано: ${done}</span>
-      <span>в процессе: ${learning}</span>
-      <span>пропущено: ${skip}</span>
-      <span>не начато: ${total - done - learning - skip}</span>
-    </div>
-  `;
+      <span>сделано: ${all.done}</span>
+      <span>в процессе: ${all.learning}</span>
+      <span>пропущено: ${all.skip}</span>
+      <span>не начато: ${all.pending}</span>
+    </div>`;
 }
 
-function renderSummary(){
-  const el = document.getElementById("summary");
+function renderTabs(){
+  const el = document.getElementById("tabs");
   el.innerHTML = DATA.map(track => {
     const s = trackStats(track);
-    const pct = s.total ? Math.round((s.done / s.total) * 100) : 0;
-    const doneW = s.total ? (s.done/s.total*100) : 0;
-    const learnW = s.total ? (s.learning/s.total*100) : 0;
-    const skipW = s.total ? (s.skip/s.total*100) : 0;
-    return `
-      <div class="summary-card">
-        <div class="name" style="color:var(${track.accent})">${track.name}</div>
-        <div class="pct">${pct}% <span style="font-size:12px;color:var(--ink-soft)">${s.done}/${s.total}</span></div>
-        <div class="bar">
-          <span style="width:${doneW}%;background:var(--status-done)"></span>
-          <span style="width:${learnW}%;background:var(--status-learning)"></span>
-          <span style="width:${skipW}%;background:var(--status-skip)"></span>
-        </div>
-      </div>
-    `;
+    const pct = s.total ? Math.round(s.done / s.total * 100) : 0;
+    const w = n => s.total ? (n / s.total * 100) : 0;
+    return `<button type="button" class="tab" role="tab" data-track="${track.id}"
+        aria-selected="${track.id === activeTrack}" style="color:var(${track.accent})">
+      <span class="t-name">${esc(track.name)}</span>
+      <span class="t-num">${pct}% · ${s.done}/${s.total}</span>
+      <span class="bar"><span style="width:${w(s.done)}%;background:#16a34a"></span><span style="width:${w(s.learning)}%;background:#9b83e6"></span></span>
+    </button>`;
   }).join("");
+  el.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => switchTrack(b.dataset.track)));
 }
 
-function renderTracks(){
-  const el = document.getElementById("tracks");
-  el.innerHTML = DATA.map(track => { const st = trackStats(track); return `
-    <section class="track">
-      <div class="track-head">
-        <span class="dot" style="background:var(${track.accent})"></span>
-        <h2 style="color:var(${track.accent})">${track.name}</h2>
-        <span class="track-count">${st.done} / ${st.total}</span>
-      </div>
-      <p class="track-desc">${track.desc}</p>
-      ${track.groups.map(group => `
-        <div class="group">
-          <div class="group-name">${group.name}</div>
-          <div class="chips">
-            ${group.topics.map(t => {
-              const s = getStatus(t);
-              return `<button type="button" class="chip" data-status="${s}" data-id="${t.id}" data-default="${t.status}">${t.label}</button>`;
-            }).join("")}
-          </div>
-        </div>
-      `).join("")}
-    </section>
-  `; }).join("");
+function switchTrack(id){
+  activeTrack = id;
+  try { localStorage.setItem(TAB_KEY, id); } catch(e){}
+  closeMenu();
+  render();
+}
 
-  el.querySelectorAll(".chip").forEach(btn => {
+function renderMap(){
+  const track = DATA.find(t => t.id === activeTrack);
+  const idx = DATA.indexOf(track);
+  const next = DATA[(idx + 1) % DATA.length];
+  const rm = document.getElementById("rm");
+  const rows = track.groups.map((g, i) => {
+    const side = i % 2 === 0 ? "right" : "left";
+    const shift = i % 2 === 0 ? "shift-a" : "shift-b";
+    const c = countTopics(g.topics);
+    const subs = g.topics.map(t =>
+      `<button type="button" class="node sub" data-id="${t.id}" data-status="${getStatus(t)}">${esc(t.label)}</button>`
+    ).join("");
+    return `<div class="rm-row ${side} ${shift}">
+      <div class="rm-main"><div class="node main" data-status="${groupStatus(g)}">${esc(g.name)}<small>${c.done} / ${c.total}</small></div></div>
+      <div class="rm-subs">${subs}</div>
+    </div>`;
+  }).join("");
+  rm.innerHTML = `
+    <svg class="rm-lines" aria-hidden="true"></svg>
+    <p class="track-desc">${track.desc}</p>
+    <div class="rm-start"><div class="title-node" style="color:var(${track.accent})">${esc(track.name)}</div></div>
+    ${rows}
+    <div class="rm-end"><button type="button" class="next-track" data-next="${next.id}">Дальше: ${esc(next.name)} →</button></div>`;
+
+  rm.querySelectorAll(".node.sub").forEach(btn => {
     btn.addEventListener("click", e => {
       e.stopPropagation();
       if(openMenu && openMenu.dataset.for === btn.dataset.id){ closeMenu(); return; }
       showMenu(btn);
-      openMenu.dataset.for = btn.dataset.id;
+    });
+  });
+  rm.querySelector(".next-track").addEventListener("click", e => {
+    switchTrack(e.currentTarget.dataset.next);
+    document.getElementById("tabs").scrollIntoView({behavior:"smooth", block:"start"});
+  });
+  drawLines();
+}
+
+// connector lines are drawn from the real positions of the boxes,
+// so they follow the layout on any screen width
+function drawLines(){
+  const rm = document.getElementById("rm");
+  const svg = rm.querySelector(".rm-lines");
+  if(!svg) return;
+  // collapse the old drawing first so it can't inflate the measurements
+  svg.setAttribute("width", 0);
+  svg.setAttribute("height", 0);
+  const base = rm.getBoundingClientRect();
+  const W = rm.clientWidth, H = rm.scrollHeight;
+  svg.setAttribute("width", W);
+  svg.setAttribute("height", H);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = "";
+  const box = el => {
+    const r = el.getBoundingClientRect();
+    return {l:r.left-base.left, r:r.right-base.left, t:r.top-base.top, b:r.bottom-base.top,
+            cx:(r.left+r.right)/2-base.left, cy:(r.top+r.bottom)/2-base.top};
+  };
+  const path = (d, cls) => {
+    const p = document.createElementNS(SVG_NS, "path");
+    p.setAttribute("d", d); p.setAttribute("class", cls); svg.appendChild(p);
+  };
+  const narrow = window.matchMedia("(max-width:760px)").matches;
+  const title = rm.querySelector(".title-node");
+  const mains = [...rm.querySelectorAll(".node.main")];
+  const end = rm.querySelector(".next-track");
+  const spine = [title, ...mains, end].filter(Boolean).map(box);
+
+  for(let i = 0; i < spine.length - 1; i++){
+    const a = spine[i], b = spine[i+1];
+    if(narrow){
+      const x = spine[1] ? spine[1].l + 18 : a.l + 18;
+      path(`M ${x} ${a.b} L ${x} ${b.t}`, "spine");
+    } else {
+      const dy = b.t - a.b;
+      path(`M ${a.cx} ${a.b} C ${a.cx} ${a.b + dy*0.55}, ${b.cx} ${b.t - dy*0.55}, ${b.cx} ${b.t}`, "spine");
+    }
+  }
+
+  rm.querySelectorAll(".rm-row").forEach(row => {
+    const m = box(row.querySelector(".node.main"));
+    row.querySelectorAll(".node.sub").forEach(el => {
+      const s = box(el);
+      if(narrow){
+        const x = m.l + 18;
+        path(`M ${x} ${s.cy} L ${s.l} ${s.cy}`, "branch");
+      } else {
+        const toRight = s.l >= m.r;
+        const x1 = toRight ? m.r : m.l;
+        const x2 = toRight ? s.l : s.r;
+        const mx = (x1 + x2) / 2;
+        path(`M ${x1} ${m.cy} C ${mx} ${m.cy}, ${mx} ${s.cy}, ${x2} ${s.cy}`, "branch");
+      }
     });
   });
 }
 
+let openMenu = null;
+function closeMenu(){ if(openMenu){ openMenu.remove(); openMenu = null; } }
+function showMenu(node){
+  closeMenu();
+  const id = node.dataset.id;
+  const current = getStatus(findTopic(id));
+  const menu = document.createElement("div");
+  menu.className = "menu";
+  menu.setAttribute("role", "menu");
+  menu.dataset.for = id;
+  [["learning","📖 В процессе"],["done","✓ Сделано"],["skip","✕ Пропустить"],["pending","Сбросить"]].forEach(([value,label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.dataset.set = value;
+    b.textContent = label;
+    b.setAttribute("role", "menuitem");
+    if(value === current) b.classList.add("active");
+    b.addEventListener("click", e => {
+      e.stopPropagation();
+      // pressing the current state again clears it, as on roadmap.sh
+      setStatus(id, value === current ? "pending" : value);
+      closeMenu();
+      render();
+      const again = document.querySelector(`.node.sub[data-id="${id}"]`);
+      if(again) again.focus({preventScroll:true});
+    });
+    menu.appendChild(b);
+  });
+  document.body.appendChild(menu);
+  const r = node.getBoundingClientRect();
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  let left = r.left + window.scrollX + (r.width - mw) / 2;
+  left = Math.max(window.scrollX + 8, Math.min(left, window.scrollX + document.documentElement.clientWidth - mw - 8));
+  let top = r.top + window.scrollY - mh - 4;
+  if(r.top - mh - 4 < 0) top = r.bottom + window.scrollY + 4;
+  menu.style.left = left + "px";
+  menu.style.top = top + "px";
+  openMenu = menu;
+  menu.querySelector("button").focus({preventScroll:true});
+}
+document.addEventListener("click", e => {
+  if(openMenu && !openMenu.contains(e.target)) closeMenu();
+});
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeMenu(); });
+
 function render(){
   renderOverall();
-  renderSummary();
-  renderTracks();
+  renderTabs();
+  renderMap();
 }
 
 function initTheme(){
   const buttons = document.querySelectorAll(".theme-switch button");
   function apply(mode){
-    if(mode === "light" || mode === "dark"){
-      document.documentElement.setAttribute("data-theme", mode);
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
+    if(mode === "light" || mode === "dark") document.documentElement.setAttribute("data-theme", mode);
+    else document.documentElement.removeAttribute("data-theme");
     buttons.forEach(b => b.setAttribute("aria-checked", b.dataset.mode === mode ? "true" : "false"));
   }
   let mode = "auto";
@@ -788,6 +796,17 @@ function initTheme(){
 
 initTheme();
 render();
+let resizeTimer;
+let lastWidth = window.innerWidth;
+window.addEventListener("resize", () => {
+  // phones fire resize when the address bar hides; only react to real width changes
+  if(window.innerWidth === lastWidth) return;
+  lastWidth = window.innerWidth;
+  closeMenu();
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(drawLines, 60);
+});
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(drawLines);
 </script>
 </body>
 </html>
