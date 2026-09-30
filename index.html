@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quant Roadmap</title>
-<meta name="description" content="Личный трекер прогресса по C++, математике, теории вероятностей и стохастике на пути к позиции quant developer.">
+<title>HFT Roadmap</title>
+<meta name="description" content="Личный трекер прогресса на пути к позиции C++-разработчика в HFT: C++, алгоритмы, системы, вероятность и математика.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,6 +21,8 @@
     --accent-math:#1f7a6c;
     --accent-prob:#b9542c;
     --accent-stoch:#7a4fb5;
+    --accent-alg:#a4368a;
+    --accent-sys:#3d6b35;
     /* node colours are the same in both themes, like on a paper map */
     --node-main:#fdff00;
     --node-sub:#ffe599;
@@ -44,6 +46,8 @@
       --accent-math:#4fb39d;
       --accent-prob:#e08a52;
       --accent-stoch:#a685d9;
+      --accent-alg:#e07ac6;
+      --accent-sys:#7fbf6e;
       --bar-empty:#343942;
     }
   }
@@ -59,6 +63,8 @@
     --accent-math:#4fb39d;
     --accent-prob:#e08a52;
     --accent-stoch:#a685d9;
+    --accent-alg:#e07ac6;
+    --accent-sys:#7fbf6e;
     --bar-empty:#343942;
   }
 
@@ -126,7 +132,7 @@
 
   .tabs{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(3,1fr);
     gap:8px;
     margin-bottom:12px;
   }
@@ -355,8 +361,8 @@
 
   <header class="page-head">
     <div class="titleblock">
-      <h1>Quant Roadmap</h1>
-      <p>C++, математика, теория вероятностей и стохастика на пути к позиции quant developer. Нажми на тему, чтобы отметить её: в процессе, сделано или пропущено.</p>
+      <h1>HFT Roadmap</h1>
+      <p>Путь к позиции C++-разработчика в HFT: C++, алгоритмы, системы, вероятность и нужная для них математика. Нажми на тему, чтобы отметить её: в процессе, сделано или пропущено.</p>
     </div>
     <div class="theme-switch" role="radiogroup" aria-label="Тема оформления">
       <button type="button" data-mode="light" role="radio">☀ Светлая</button>
@@ -405,7 +411,7 @@
 const DATA = [
   {
     id: "cpp", name: "C++", accent: "--accent-cpp",
-    desc: "Наш курс в том порядке, в каком мы его проходим: тема закрывается практикой, потом следующая. Подробный разбор тем с книгами по уровням — <a href=\"https://salmer.github.io/CppDeveloperRoadmap/\" target=\"_blank\" rel=\"noopener\">роадмап Salmer'а</a> (есть на русском).",
+    desc: "Главный инструмент HFT-разработчика. Идём по нашему курсу: тема закрывается практикой, потом следующая. Подробный разбор тем с книгами по уровням — <a href=\"https://salmer.github.io/CppDeveloperRoadmap/\" target=\"_blank\" rel=\"noopener\">роадмап Salmer'а</a> (есть на русском).",
     groups: [
       { name: "Основы", topics: [
         { id:"cpp-intro", label:"Что такое C++ и где он используется", status:"pending" },
@@ -416,9 +422,9 @@ const DATA = [
       { name: "Операции и ветвления", topics: [
         { id:"cpp-arith", label:"Арифметика", status:"done" },
         { id:"cpp-logic", label:"Логические операторы (&&, ||, !)", status:"done" },
-        { id:"cpp-bitwise", label:"Битовые операции", status:"pending" },
+        { id:"cpp-bitwise", label:"Битовые операции", status:"learning" },
         { id:"cpp-ifelse", label:"if / else if / else", status:"done" },
-        { id:"cpp-switch", label:"switch / goto", status:"pending" },
+        { id:"cpp-switch", label:"switch / goto", status:"done" },
       ]},
       { name: "Циклы и функции", topics: [
         { id:"cpp-loops", label:"for / while", status:"done" },
@@ -440,8 +446,8 @@ const DATA = [
       ]},
       { name: "Ассоциативные контейнеры", topics: [
         { id:"cpp-unordered-map", label:"unordered_map", status:"done" },
-        { id:"cpp-map", label:"map (отсортированный)", status:"learning" },
-        { id:"cpp-multimap", label:"multimap", status:"pending" },
+        { id:"cpp-map", label:"map (отсортированный)", status:"done" },
+        { id:"cpp-multimap", label:"multimap", status:"done" },
       ]},
       { name: "ООП", topics: [
         { id:"cpp-classes", label:"Классы, инкапсуляция, public/private", status:"done" },
@@ -471,6 +477,7 @@ const DATA = [
       { name: "Возможности языка", topics: [
         { id:"cpp-const", label:"const и constexpr", status:"learning" },
         { id:"cpp-auto", label:"auto (вывод типов)", status:"learning" },
+        { id:"cpp-move", label:"Move-семантика и rvalue-ссылки", status:"pending" },
         { id:"cpp-casts", label:"static_cast и другие приведения типов", status:"pending" },
         { id:"cpp-ub", label:"Неопределённое поведение (UB)", status:"learning" },
         { id:"cpp-macros", label:"Макросы и препроцессор", status:"pending" },
@@ -483,7 +490,6 @@ const DATA = [
         { id:"cpp-iterators", label:"Итераторы", status:"pending" },
         { id:"cpp-algorithms", label:"Алгоритмы STL (sort, find, ...)", status:"pending" },
         { id:"cpp-chrono", label:"Дата и время (chrono)", status:"pending" },
-        { id:"cpp-threads", label:"Многопоточность", status:"pending" },
       ]},
       { name: "Шаблоны", topics: [
         { id:"cpp-templates", label:"Шаблоны функций и классов", status:"pending" },
@@ -520,41 +526,85 @@ const DATA = [
     ]
   },
   {
-    id: "math", name: "Математика", accent: "--accent-math",
-    desc: "Фундамент под вероятность и стохастику: комбинаторика, анализ, линейная алгебра.",
+    id: "alg", name: "Алгоритмы", accent: "--accent-alg",
+    desc: "Главный фильтр на собеседованиях в сильные компании. Ориентир — 100–150 решённых задач уровня easy/medium.",
     groups: [
-      { name: "Комбинаторика", topics: [
-        { id:"math-permutations", label:"Перестановки", status:"pending" },
-        { id:"math-combinations", label:"Сочетания C(n,k)", status:"learning" },
-        { id:"math-product-rule", label:"Правило произведения и суммы", status:"pending" },
+      { name: "Основы", topics: [
+        { id:"alg-complexity", label:"Сложность алгоритмов (O-большое)", status:"pending" },
+        { id:"alg-recursion", label:"Рекурсия", status:"pending" },
       ]},
-      { name: "Алгебра и функции", topics: [
-        { id:"math-equations", label:"Уравнения и неравенства", status:"pending" },
-        { id:"math-functions", label:"Функции и графики", status:"pending" },
-        { id:"math-logs", label:"Логарифмы и экспоненты", status:"pending" },
+      { name: "Массивы и строки", topics: [
+        { id:"alg-two-pointers", label:"Два указателя", status:"pending" },
+        { id:"alg-prefix-sums", label:"Префиксные суммы", status:"pending" },
+        { id:"alg-sliding-window", label:"Скользящее окно", status:"pending" },
       ]},
-      { name: "Математический анализ", topics: [
-        { id:"math-limits", label:"Пределы", status:"pending" },
-        { id:"math-derivatives", label:"Производные", status:"pending" },
-        { id:"math-integrals", label:"Интегралы (основы)", status:"pending" },
+      { name: "Поиск и сортировка", topics: [
+        { id:"alg-binary-search", label:"Бинарный поиск", status:"pending" },
+        { id:"alg-sorting", label:"Сортировки: слиянием, быстрая", status:"pending" },
       ]},
-      { name: "Линейная алгебра", topics: [
-        { id:"math-vectors-matrices", label:"Векторы и матрицы", status:"pending" },
-        { id:"math-linear-systems", label:"Системы линейных уравнений", status:"pending" },
-        { id:"math-eigen", label:"Собственные значения/векторы", status:"pending" },
+      { name: "Структуры данных изнутри", topics: [
+        { id:"alg-hash", label:"Хеш-таблица: как устроена", status:"pending" },
+        { id:"alg-linked-list", label:"Связный список", status:"pending" },
+        { id:"alg-stack-queue", label:"Стек и очередь в задачах", status:"pending" },
+        { id:"alg-heap", label:"Куча (как устроен priority_queue)", status:"pending" },
+        { id:"alg-trees", label:"Деревья и BST", status:"pending" },
       ]},
-      { name: "Ряды и последовательности", topics: [
-        { id:"math-series", label:"Числовые ряды", status:"pending" },
-        { id:"math-convergence", label:"Сходимость", status:"pending" },
+      { name: "Графы", topics: [
+        { id:"alg-bfs-dfs", label:"Обход графа: BFS и DFS", status:"pending" },
+        { id:"alg-shortest", label:"Кратчайшие пути (Дейкстра)", status:"pending" },
+      ]},
+      { name: "Продвинутое", topics: [
+        { id:"alg-dp", label:"Динамическое программирование", status:"pending" },
+        { id:"alg-bits", label:"Битовые трюки в задачах", status:"learning" },
+        { id:"alg-leetcode", label:"Практика: 100+ задач easy/medium", status:"pending" },
+      ]},
+    ]
+  },
+  {
+    id: "sys", name: "Системы", accent: "--accent-sys",
+    desc: "То, что отличает HFT-разработчика от обычного: как работают процессор, память, потоки и сеть, и как выжать из них микросекунды.",
+    groups: [
+      { name: "Linux и инструменты", topics: [
+        { id:"sys-linux-terminal", label:"Терминал Linux: основы", status:"pending" },
+        { id:"sys-build-cli", label:"Сборка из командной строки (g++, make)", status:"pending" },
+        { id:"sys-git", label:"Git: коммиты, ветки, pull request", status:"pending" },
+      ]},
+      { name: "Как работает компьютер", topics: [
+        { id:"sys-process-thread", label:"Процессы и потоки", status:"pending" },
+        { id:"sys-virtual-memory", label:"Виртуальная память", status:"pending" },
+        { id:"sys-cpu-cache", label:"Кэш процессора и cache line", status:"pending" },
+        { id:"sys-branch", label:"Предсказание ветвлений", status:"pending" },
+      ]},
+      { name: "Многопоточность", topics: [
+        { id:"cpp-threads", label:"std::thread: запуск потоков", status:"pending" },
+        { id:"sys-mutex", label:"mutex и гонки данных", status:"pending" },
+        { id:"sys-atomic", label:"atomic и порядок памяти", status:"pending" },
+        { id:"sys-lockfree", label:"Lock-free очереди", status:"pending" },
+      ]},
+      { name: "Сети", topics: [
+        { id:"sys-tcp-udp", label:"TCP и UDP", status:"pending" },
+        { id:"sys-sockets", label:"Сокеты", status:"pending" },
+        { id:"sys-multicast", label:"Multicast (так приходят рыночные данные)", status:"pending" },
+      ]},
+      { name: "Производительность", topics: [
+        { id:"sys-latency", label:"Что такое latency и как её мерить", status:"pending" },
+        { id:"sys-profiling", label:"Профилирование (perf)", status:"pending" },
+        { id:"sys-benchmark", label:"Бенчмарки", status:"pending" },
+        { id:"sys-alloc", label:"Код без лишних аллокаций", status:"pending" },
+      ]},
+      { name: "Биржа", topics: [
+        { id:"sys-orderbook", label:"Книга заявок (order book)", status:"pending" },
+        { id:"sys-market-data", label:"Рыночные данные и биржевые протоколы", status:"pending" },
+        { id:"sys-microstructure", label:"Основы микроструктуры рынка", status:"pending" },
       ]},
     ]
   },
   {
     id: "prob", name: "Теория вероятностей", accent: "--accent-prob",
-    desc: "От классических задач (монетки, кости) до распределений и предельных теорем — то, что реально спрашивают на quant-собеседованиях.",
+    desc: "Задачи на вероятность спрашивают и у HFT-разработчиков: от монеток и кубиков до матожидания.",
     groups: [
       { name: "Основы вероятности", topics: [
-        { id:"prob-classical", label:"Классическое определение вероятности", status:"learning" },
+        { id:"prob-classical", label:"Классическое определение вероятности", status:"done" },
         { id:"prob-events", label:"События и операции над ними", status:"pending" },
         { id:"prob-conditional", label:"Условная вероятность", status:"pending" },
         { id:"prob-bayes", label:"Формула Байеса", status:"pending" },
@@ -577,13 +627,34 @@ const DATA = [
       { name: "Практика", topics: [
         { id:"prob-classic-problems", label:"Классические задачи (монетки, кости, носки)", status:"learning" },
         { id:"prob-combinatorial", label:"Комбинаторные задачи на вероятность", status:"pending" },
-        { id:"prob-interview", label:"Задачи в стиле quant-собеседований", status:"pending" },
+        { id:"prob-interview", label:"Задачи в стиле собеседований", status:"pending" },
       ]},
     ]
   },
   {
-    id: "stoch", name: "Стохастические процессы", accent: "--accent-stoch",
-    desc: "Марковские цепи, броуновское движение, модель Блэка-Шоулза — самый дальний рубеж, для более позднего этапа.",
+    id: "math", name: "Математика", accent: "--accent-math",
+    desc: "Только то, что нужно для вероятности и алгоритмов. Без лишнего.",
+    groups: [
+      { name: "Арифметика и алгебра", topics: [
+        { id:"math-fractions", label:"Дроби: сложение, умножение, сокращение", status:"done" },
+        { id:"math-logs", label:"Степени и логарифмы", status:"pending" },
+        { id:"math-equations", label:"Уравнения и неравенства", status:"pending" },
+      ]},
+      { name: "Комбинаторика", topics: [
+        { id:"math-product-rule", label:"Правило произведения и суммы", status:"done" },
+        { id:"math-permutations", label:"Перестановки", status:"pending" },
+        { id:"math-combinations", label:"Сочетания C(n,k)", status:"learning" },
+      ]},
+      { name: "Основы анализа (по минимуму)", topics: [
+        { id:"math-functions", label:"Функции и графики", status:"pending" },
+        { id:"math-derivatives", label:"Производные: смысл", status:"pending" },
+        { id:"math-integrals", label:"Интегралы: смысл", status:"pending" },
+      ]},
+    ]
+  },
+  {
+    id: "stoch", name: "Стохастика", accent: "--accent-stoch", optional: true,
+    desc: "По желанию, на потом. Для HFT-разработчика не обязательно, в общий прогресс не входит. Пригодится, если когда-нибудь захочешь в исследователи.",
     groups: [
       { name: "Основы процессов", topics: [
         { id:"stoch-random-walk", label:"Случайные блуждания", status:"pending" },
@@ -649,7 +720,8 @@ try { const t = localStorage.getItem(TAB_KEY); if(t && DATA.some(d => d.id === t
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 function renderOverall(){
-  const all = countTopics(DATA.flatMap(t => t.groups.flatMap(g => g.topics)));
+  // optional tracks are shown but don't count toward the overall progress
+  const all = countTopics(DATA.filter(t => !t.optional).flatMap(t => t.groups.flatMap(g => g.topics)));
   const pct = all.total ? Math.round(all.done / all.total * 100) : 0;
   const w = n => all.total ? (n / all.total * 100) : 0;
   document.getElementById("overall").innerHTML = `
@@ -681,7 +753,7 @@ function renderTabs(){
     const w = n => s.total ? (n / s.total * 100) : 0;
     return `<button type="button" class="tab" role="tab" data-track="${track.id}"
         aria-selected="${track.id === activeTrack}" style="color:var(${track.accent})">
-      <span class="t-name">${esc(track.name)}</span>
+      <span class="t-name">${esc(track.name)}${track.optional ? " · по желанию" : ""}</span>
       <span class="t-num">${pct}% · ${s.done}/${s.total}</span>
       <span class="bar"><span style="width:${w(s.done)}%;background:#16a34a"></span><span style="width:${w(s.learning)}%;background:#9b83e6"></span></span>
     </button>`;
