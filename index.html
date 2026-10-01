@@ -129,6 +129,20 @@
   .bar{height:8px;border-radius:4px;background:var(--bar-empty);overflow:hidden;display:flex}
   .bar span{height:100%}
   .overall-breakdown{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .streak{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+  .streak-info{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+  .streak-num{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:600;line-height:1}
+  .streak-text{font-size:14px}
+  .streak-sub{font-size:12.5px;color:var(--ink-soft)}
+  .streak.cold .streak-num{color:var(--ink-soft)}
+  .streak-btn{
+    font:inherit;font-size:13px;
+    background:var(--ink);color:var(--bg);
+    border:1px solid var(--ink);border-radius:8px;
+    padding:8px 14px;cursor:pointer;
+  }
+  .streak-btn:disabled{background:transparent;color:#16a34a;border-color:var(--border);cursor:default}
+  .streak-btn:focus-visible{outline:2px solid var(--line);outline-offset:2px}
 
   .tabs{
     display:grid;
@@ -692,7 +706,7 @@ function saveOverrides(o){
 let overrides = loadOverrides();
 
 function getStatus(topic){ return overrides[topic.id] || topic.status; }
-function setStatus(id, status){ overrides[id] = status; saveOverrides(overrides); queueSync(id); }
+function setStatus(id, status){ overrides[id] = status; saveOverrides(overrides); markStudied(); queueSync(id); }
 function findTopic(id){
   for(const track of DATA) for(const g of track.groups) for(const t of g.topics) if(t.id === id) return t;
   return null;
@@ -742,7 +756,8 @@ function renderOverall(){
       <span>в процессе: ${all.learning}</span>
       <span>пропущено: ${all.skip}</span>
       <span>не начато: ${all.pending}</span>
-    </div>`;
+    </div>
+    ${streakHtml()}`;
 }
 
 function renderTabs(){
@@ -951,6 +966,85 @@ let syncConfig = readJSON(SYNC_KEY, null);
 let pending = new Set(readJSON(PENDING_KEY, []));
 let syncBusy = false;
 
+// ---------- study streak ----------
+// A study day is a calendar day (Moscow time, same as the server) on which
+// "Занимался сегодня" was pressed or any topic mark was changed.
+// Strict: a day without study resets the streak.
+const DAYS_KEY = "quant-roadmap-days";
+const DAYS_PENDING_KEY = "quant-roadmap-days-pending";
+let studyDays = new Set(readJSON(DAYS_KEY, []));
+let pendingDays = new Set(readJSON(DAYS_PENDING_KEY, []));
+
+function studyDayKey(d){
+  d = d || new Date();
+  try {
+    return new Intl.DateTimeFormat("en-CA", {timeZone:"Europe/Moscow", year:"numeric", month:"2-digit", day:"2-digit"}).format(d);
+  } catch(e){
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }
+}
+function shiftDay(day, delta){
+  const d = new Date(day + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + delta);
+  return d.toISOString().slice(0, 10);
+}
+function isDayString(day){ return typeof day === "string" && /^\d{4}-\d{2}-\d{2}$/.test(day); }
+function streakOf(days, today){
+  const set = new Set([...days].filter(isDayString));
+  const sorted = [...set].sort();
+  let best = 0, run = 0, prev = null;
+  for(const day of sorted){
+    run = prev !== null && shiftDay(prev, 1) === day ? run + 1 : 1;
+    best = Math.max(best, run);
+    prev = day;
+  }
+  const todayDone = set.has(today);
+  let cursor = todayDone ? today : shiftDay(today, -1), current = 0;
+  while(set.has(cursor)){ current++; cursor = shiftDay(cursor, -1); }
+  return {current, best, todayDone};
+}
+function daysWord(n){
+  const m10 = n % 10, m100 = n % 100;
+  if(m10 === 1 && m100 !== 11) return "день";
+  if(m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return "дня";
+  return "дней";
+}
+function streakHtml(){
+  const s = streakOf(studyDays, studyDayKey());
+  let sub;
+  if(s.current === 0) sub = s.best ? `рекорд ${s.best} ${daysWord(s.best)} · начни новый` : "отметь первый день";
+  else sub = `рекорд ${s.best} ${daysWord(s.best)}` + (s.todayDone ? "" : " · сегодня ещё не отмечен");
+  const btn = s.todayDone
+    ? `<button type="button" class="streak-btn" disabled>✓ Сегодня засчитан</button>`
+    : `<button type="button" class="streak-btn" id="streak-btn">Занимался сегодня</button>`;
+  return `<div class="streak${s.current === 0 ? " cold" : ""}">
+      <div class="streak-info">
+        <span class="streak-num">🔥 ${s.current}</span>
+        <span class="streak-text">${daysWord(s.current)} подряд</span>
+        <span class="streak-sub">${sub}</span>
+      </div>
+      ${btn}
+    </div>`;
+}
+function markStudied(){
+  const day = studyDayKey();
+  if(studyDays.has(day)) return;
+  studyDays.add(day);
+  writeJSON(DAYS_KEY, [...studyDays].sort());
+  if(syncConfig){ pendingDays.add(day); writeJSON(DAYS_PENDING_KEY, [...pendingDays]); }
+}
+function mergeServerDays(data){
+  const days = data && data.activity && Array.isArray(data.activity.days) ? data.activity.days : [];
+  days.filter(isDayString).forEach(d => studyDays.add(d));
+  writeJSON(DAYS_KEY, [...studyDays].sort());
+}
+document.getElementById("overall").addEventListener("click", e => {
+  if(!e.target.closest("#streak-btn")) return;
+  markStudied();
+  renderOverall();
+  flush();
+});
+
 function setSyncState(text, kind){
   const el = document.getElementById("sync-state");
   el.textContent = text;
@@ -999,6 +1093,7 @@ function applyServerState(data){
     }
   }
   saveOverrides(overrides);
+  mergeServerDays(data);
   return true;
 }
 
@@ -1013,13 +1108,32 @@ async function pushIds(ids){
   return r;
 }
 
+async function pushDays(days){
+  const r = await request(syncConfig, "POST", {updates: days.map(d => ({checkin:d}))});
+  if(r.ok){
+    days.forEach(d => pendingDays.delete(d));
+    writeJSON(DAYS_PENDING_KEY, [...pendingDays]);
+    mergeServerDays(r.data);
+  }
+  return r;
+}
+
 async function flush(){
-  if(!syncConfig || syncBusy || pending.size === 0) return;
+  if(!syncConfig || syncBusy || (pending.size === 0 && pendingDays.size === 0)) return;
   syncBusy = true;
   setSyncState("отправляю…");
-  const r = await pushIds([...pending]);
+  let r = {ok:true};
+  if(pending.size > 0) r = await pushIds([...pending]);
+  let note = "";
+  // days go separately: a server without streak support rejects them (400),
+  // and that must not block the topic marks
+  if(r.ok && pendingDays.size > 0){
+    const d = await pushDays([...pendingDays]);
+    if(d.status === 400) note = " · стрик: обнови сервер";
+    else if(!d.ok) r = d;
+  }
   syncBusy = false;
-  if(r.ok) setSyncState("синхронизировано · " + timeNow(), "ok");
+  if(r.ok) setSyncState("синхронизировано · " + timeNow() + note, note ? "err" : "ok");
   else setSyncState("не отправлено: " + explain(r.status, r.data), "err");
   if(r.ok && pending.size > 0) flush();
 }
@@ -1066,6 +1180,8 @@ function initSync(){
     // every topic goes up once, so the server matches this browser exactly
     ALL_IDS.forEach(id => pending.add(id));
     writeJSON(PENDING_KEY, [...pending]);
+    studyDays.forEach(d => pendingDays.add(d));
+    writeJSON(DAYS_PENDING_KEY, [...pendingDays]);
     await flush();
     if(pending.size === 0) await pull();
   });
@@ -1075,10 +1191,15 @@ function initSync(){
     pending.clear(); writeJSON(PENDING_KEY, []);
     setSyncState("загружаю…");
     await pull();
+    // study days only add up, so local ones go to the server as well
+    studyDays.forEach(d => pendingDays.add(d));
+    writeJSON(DAYS_PENDING_KEY, [...pendingDays]);
+    await flush();
   });
   $("sync-off").addEventListener("click", () => {
     syncConfig = null; writeJSON(SYNC_KEY, null);
     pending.clear(); writeJSON(PENDING_KEY, []);
+    pendingDays.clear(); writeJSON(DAYS_PENDING_KEY, []);
     ["sync-server","sync-user","sync-token"].forEach(id => { $(id).value = ""; });
     setSyncState("не подключено");
   });
