@@ -21,6 +21,7 @@
     --accent-math:#1f7a6c;
     --accent-prob:#b9542c;
     --accent-stoch:#7a4fb5;
+    --accent-tools:#8a5a14;
     --accent-alg:#a4368a;
     --accent-sys:#3d6b35;
     /* node colours are the same in both themes, like on a paper map */
@@ -46,6 +47,7 @@
       --accent-math:#4fb39d;
       --accent-prob:#e08a52;
       --accent-stoch:#a685d9;
+      --accent-tools:#d9a650;
       --accent-alg:#e07ac6;
       --accent-sys:#7fbf6e;
       --bar-empty:#343942;
@@ -63,6 +65,7 @@
     --accent-math:#4fb39d;
     --accent-prob:#e08a52;
     --accent-stoch:#a685d9;
+    --accent-tools:#d9a650;
     --accent-alg:#e07ac6;
     --accent-sys:#7fbf6e;
     --bar-empty:#343942;
@@ -614,6 +617,29 @@ const DATA = [
     ]
   },
   {
+    id: "tools", name: "Бэкенд и данные", accent: "--accent-tools",
+    desc: "То, что спрашивают почти на любой позиции в финтехе, даже если основной язык C++: базы данных, API и окружение, в котором живёт код.",
+    groups: [
+      { name: "Базы данных", topics: [
+        { id:"tools-sql-select", label:"SQL: SELECT, WHERE, ORDER BY", status:"pending" },
+        { id:"tools-sql-join", label:"JOIN: связь таблиц", status:"pending" },
+        { id:"tools-sql-group", label:"GROUP BY и агрегаты", status:"pending" },
+        { id:"tools-sql-index", label:"Индексы и транзакции", status:"pending" },
+        { id:"tools-postgres", label:"PostgreSQL на практике", status:"pending" },
+      ]},
+      { name: "Веб и API", topics: [
+        { id:"tools-http", label:"HTTP: методы, заголовки, коды ответа", status:"pending" },
+        { id:"tools-json", label:"JSON", status:"pending" },
+        { id:"tools-rest", label:"REST API: как устроены", status:"pending" },
+        { id:"tools-api-cpp", label:"Запросы к API из C++", status:"pending" },
+      ]},
+      { name: "Окружение", topics: [
+        { id:"tools-docker", label:"Docker: образы и контейнеры", status:"pending" },
+        { id:"tools-ci", label:"CI: автоматические проверки (GitHub Actions)", status:"pending" },
+      ]},
+    ]
+  },
+  {
     id: "prob", name: "Теория вероятностей", accent: "--accent-prob",
     desc: "Задачи на вероятность спрашивают и у HFT-разработчиков: от монеток и кубиков до матожидания.",
     groups: [
@@ -1097,9 +1123,20 @@ function applyServerState(data){
   return true;
 }
 
+// topics added to the site before the Goalbar plan was updated: the server
+// does not know them yet; they stay local instead of blocking all other marks
+let localOnly = new Set();
+
 async function pushIds(ids){
-  const updates = ids.map(id => ({step_id:id, state:getStatus(findTopic(id))}));
-  const r = await request(syncConfig, "POST", {updates});
+  let updates = ids.map(id => ({step_id:id, state:getStatus(findTopic(id))}));
+  let r = await request(syncConfig, "POST", {updates});
+  if(!r.ok && r.status === 404 && r.data && Array.isArray(r.data.known_step_ids)){
+    const known = new Set(r.data.known_step_ids);
+    updates.forEach(u => { if(!known.has(u.step_id)){ pending.delete(u.step_id); localOnly.add(u.step_id); } });
+    writeJSON(PENDING_KEY, [...pending]);
+    updates = updates.filter(u => known.has(u.step_id));
+    r = updates.length ? await request(syncConfig, "POST", {updates}) : {ok:true, status:200, data:null};
+  }
   if(r.ok){
     // a topic clicked again while the request was in flight stays queued
     updates.forEach(u => { if(getStatus(findTopic(u.step_id)) === u.state) pending.delete(u.step_id); });
@@ -1133,6 +1170,7 @@ async function flush(){
     else if(!d.ok) r = d;
   }
   syncBusy = false;
+  if(r.ok && localOnly.size > 0 && !note) note = " · новые темы пока только здесь";
   if(r.ok) setSyncState("синхронизировано · " + timeNow() + note, note ? "err" : "ok");
   else setSyncState("не отправлено: " + explain(r.status, r.data), "err");
   if(r.ok && pending.size > 0) flush();
