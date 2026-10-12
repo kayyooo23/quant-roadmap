@@ -132,6 +132,15 @@
   .bar{height:8px;border-radius:4px;background:var(--bar-empty);overflow:hidden;display:flex}
   .bar span{height:100%}
   .overall-breakdown{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .iv{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:grid;gap:8px}
+  .iv-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px 12px;flex-wrap:wrap}
+  .iv-title{font-size:14px;font-weight:600}
+  .iv-num{font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .iv-toggle{justify-self:start;font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer}
+  .iv-toggle[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .iv-toggle:focus-visible{outline:2px solid var(--line);outline-offset:2px}
+  .iv-mark{font-size:12px;text-decoration:none;display:inline-block}
+  .iv-note{font-weight:600}
   .streak{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
   .streak-info{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
   .streak-num{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:600;line-height:1}
@@ -531,6 +540,7 @@ const DATA = [
         { id:"cpp-compile-stages", label:"Как работает компилятор: этапы сборки", status:"pending" },
         { id:"cpp-compilers", label:"GCC / Clang / MSVC", status:"pending" },
         { id:"cpp-debugger", label:"Отладчик: точки останова, пошаговый запуск", status:"pending" },
+        { id:"cpp-sanitizers", label:"Санитайзеры и Valgrind: ловим UB и утечки", status:"pending" },
         { id:"cpp-cmake", label:"CMake", status:"pending" },
         { id:"cpp-pkg", label:"Пакетные менеджеры (vcpkg, Conan)", status:"pending" },
       ]},
@@ -539,6 +549,11 @@ const DATA = [
         { id:"cpp-boost", label:"Boost", status:"pending" },
         { id:"cpp-fmt", label:"fmt / spdlog", status:"pending" },
         { id:"cpp-qt", label:"Qt (по желанию)", status:"pending" },
+      ]},
+      { name: "Собеседование", topics: [
+        { id:"cpp-iv-resume", label:"Резюме и рассказ о своих проектах", status:"pending" },
+        { id:"cpp-iv-project", label:"Проект на GitHub: книга заявок с замерами", status:"pending" },
+        { id:"cpp-iv-mock", label:"Пробные собеседования", status:"pending" },
       ]},
     ]
   },
@@ -585,6 +600,7 @@ const DATA = [
         { id:"sys-linux-terminal", label:"Терминал Linux: основы", status:"pending" },
         { id:"sys-build-cli", label:"Сборка из командной строки (g++, make)", status:"pending" },
         { id:"sys-git", label:"Git: коммиты, ветки, pull request", status:"pending" },
+        { id:"sys-unix-proc", label:"fork, сигналы, pipe: процессы в UNIX", status:"pending" },
       ]},
       { name: "Как работает компьютер", topics: [
         { id:"sys-process-thread", label:"Процессы и потоки", status:"pending" },
@@ -754,6 +770,25 @@ function groupStatus(group){
   return "pending";
 }
 
+// 🎯 topics asked at junior C++ interviews (Dr.Web-style: C++ under UNIX/Windows).
+// The filter shows only these; the overall card shows readiness for the interview.
+const INTERVIEW = new Set([
+  "cpp-functions","cpp-overload","cpp-lambdas","cpp-vector-basics","cpp-list","cpp-unordered-map","cpp-map",
+  "cpp-classes","cpp-ctor-dtor","cpp-inheritance","cpp-vtable","cpp-operator-overload","cpp-rule-of-five",
+  "cpp-references","cpp-memory-model","cpp-pointers","cpp-new-delete","cpp-lifetime","cpp-leaks","cpp-smart-ptr",
+  "cpp-scope","cpp-namespaces","cpp-headers","cpp-const","cpp-auto","cpp-move","cpp-casts","cpp-ub","cpp-macros",
+  "cpp-exceptions","cpp-iterators","cpp-algorithms","cpp-templates","cpp-raii","cpp-std11",
+  "cpp-compile-stages","cpp-debugger","cpp-sanitizers","cpp-cmake",
+  "cpp-iv-resume","cpp-iv-project","cpp-iv-mock",
+  "alg-complexity","alg-recursion","alg-two-pointers","alg-prefix-sums","alg-binary-search","alg-sorting",
+  "alg-hash","alg-linked-list","alg-stack-queue","alg-trees","alg-leetcode",
+  "sys-linux-terminal","sys-build-cli","sys-git","sys-unix-proc","sys-process-thread","sys-virtual-memory",
+  "sys-cpu-cache","cpp-threads","sys-mutex","sys-atomic","sys-tcp-udp","sys-sockets",
+]);
+const IV_KEY = "quant-roadmap-interview-only";
+let ivOnly = false;
+try { ivOnly = localStorage.getItem(IV_KEY) === "1"; } catch(e){}
+
 let activeTrack = "cpp";
 try { const t = localStorage.getItem(TAB_KEY); if(t && DATA.some(d => d.id === t)) activeTrack = t; } catch(e){}
 
@@ -783,8 +818,33 @@ function renderOverall(){
       <span>пропущено: ${all.skip}</span>
       <span>не начато: ${all.pending}</span>
     </div>
+    ${interviewHtml()}
     ${streakHtml()}`;
 }
+
+function interviewTopics(){
+  return DATA.flatMap(t => t.groups.flatMap(g => g.topics)).filter(t => INTERVIEW.has(t.id));
+}
+function interviewHtml(){
+  const c = countTopics(interviewTopics());
+  const pct = c.total ? Math.round(c.done / c.total * 100) : 0;
+  const w = n => c.total ? (n / c.total * 100) : 0;
+  return `<div class="iv">
+      <div class="iv-top">
+        <span class="iv-title">🎯 Готовность к собеседованию junior C++</span>
+        <span class="iv-num">${pct}% · ${c.done} из ${c.total}${c.learning ? ` · в процессе ${c.learning}` : ""}</span>
+      </div>
+      <div class="bar"><span style="width:${w(c.done)}%;background:#16a34a"></span><span style="width:${w(c.learning)}%;background:#9b83e6"></span></div>
+      <button type="button" class="iv-toggle" id="iv-toggle" aria-pressed="${ivOnly}">${ivOnly ? "Показать все темы" : "Показать только 🎯 темы"}</button>
+    </div>`;
+}
+document.getElementById("overall").addEventListener("click", e => {
+  if(!e.target.closest("#iv-toggle")) return;
+  ivOnly = !ivOnly;
+  try { localStorage.setItem(IV_KEY, ivOnly ? "1" : "0"); } catch(e){}
+  closeMenu();
+  render();
+});
 
 function renderTabs(){
   const el = document.getElementById("tabs");
@@ -814,12 +874,15 @@ function renderMap(){
   const idx = DATA.indexOf(track);
   const next = DATA[(idx + 1) % DATA.length];
   const rm = document.getElementById("rm");
-  const rows = track.groups.map((g, i) => {
+  const groups = track.groups
+    .map(g => ivOnly ? {...g, topics: g.topics.filter(t => INTERVIEW.has(t.id))} : g)
+    .filter(g => g.topics.length > 0);
+  const rows = groups.map((g, i) => {
     const side = i % 2 === 0 ? "right" : "left";
     const shift = i % 2 === 0 ? "shift-a" : "shift-b";
     const c = countTopics(g.topics);
     const subs = g.topics.map(t =>
-      `<button type="button" class="node sub" data-id="${t.id}" data-status="${getStatus(t)}">${esc(t.label)}</button>`
+      `<button type="button" class="node sub" data-id="${t.id}" data-status="${getStatus(t)}">${esc(t.label)}${!ivOnly && INTERVIEW.has(t.id) ? ' <span class="iv-mark" title="Спрашивают на собеседовании">🎯</span>' : ""}</button>`
     ).join("");
     return `<div class="rm-row ${side} ${shift}">
       <div class="rm-main"><div class="node main" data-status="${groupStatus(g)}">${esc(g.name)}<small>${c.done} / ${c.total}</small></div></div>
@@ -829,6 +892,7 @@ function renderMap(){
   rm.innerHTML = `
     <svg class="rm-lines" aria-hidden="true"></svg>
     <p class="track-desc">${track.desc}</p>
+    ${ivOnly ? `<p class="track-desc iv-note">Показаны только 🎯 темы для собеседования${groups.length ? "" : ": в этом разделе их нет"}.</p>` : ""}
     <div class="rm-start"><div class="title-node" style="color:var(${track.accent})">${esc(track.name)}</div></div>
     ${rows}
     <div class="rm-end"><button type="button" class="next-track" data-next="${next.id}">Дальше: ${esc(next.name)} →</button></div>`;
