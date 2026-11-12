@@ -397,6 +397,19 @@
     </div>
   </header>
 
+  <section class="overall" aria-labelledby="progress-update">
+    <h2 id="progress-update">Проверка прогресса · 12 ноября 2026</h2>
+    <p>Цель — подготовка к стажировке C++ летом 2027 года; low-latency/HFT остаётся долгосрочным направлением. Обсуждение темы не означает, что она освоена самостоятельно.</p>
+    <ul>
+      <li>Перегрузки: разобраны типы аргументов, преобразования и параметры по умолчанию. Сравнение преобразований по нескольким аргументам ещё нужно закрепить.</li>
+      <li>Память: были упражнения со ссылками, new/delete, временем жизни и UB. unique_ptr разобран до get(), reset() и release(); тема владения ещё в процессе. shared_ptr и weak_ptr пока впереди.</li>
+      <li>Практика: <a href="https://github.com/kayyooo23/cpp-practice">9 решений в main</a>; <a href="https://github.com/kayyooo23/cpp-practice/tree/feat/leetcode-283-move-zeroes">Move Zeroes (#283) сохранена в отдельной ветке</a>. Это 10 сохранённых решений суммарно; принятие #283 на LeetCode отдельно не подтверждено.</li>
+      <li>Ближайший шаг — самостоятельный консольный PC Manager: добавление и просмотр компьютеров, затем занятие, освобождение и обработка ввода. Проект запланирован, завершение не подтверждено.</li>
+    </ul>
+    <p>Далее: закрепить владение и перегрузки, закончить небольшой самостоятельный проект, продолжить алгоритмы; затем вернуться к инструментам сборки, Linux и подготовке к собеседованиям. Книга заявок с замерами остаётся будущим проектом.</p>
+    <p>Ниже обновлены стартовые статусы. Ваши сохранённые отметки в браузере и Goalbar имеют приоритет и автоматически не перезаписываются.</p>
+  </section>
+
   <div class="overall" id="overall"></div>
 
   <details class="sync" id="sync">
@@ -456,7 +469,7 @@ const DATA = [
         { id:"cpp-loops", label:"for / while", status:"done" },
         { id:"cpp-loop-control", label:"do-while, break / continue", status:"learning" },
         { id:"cpp-functions", label:"Функции: параметры, возврат", status:"done" },
-        { id:"cpp-overload", label:"Перегрузка функций", status:"learning" },
+        { id:"cpp-overload", label:"Перегрузка: типы аргументов и неоднозначность", status:"learning" },
         { id:"cpp-lambdas", label:"Лямбды", status:"pending" },
       ]},
       { name: "Vector", topics: [
@@ -486,13 +499,13 @@ const DATA = [
         { id:"cpp-multi-inherit", label:"Множественное наследование", status:"pending" },
       ]},
       { name: "Указатели и память", topics: [
-        { id:"cpp-references", label:"Ссылки (&)", status:"pending" },
-        { id:"cpp-memory-model", label:"Модель памяти: стек и куча", status:"pending" },
-        { id:"cpp-pointers", label:"Указатели, this подробно", status:"pending" },
-        { id:"cpp-new-delete", label:"new / delete", status:"pending" },
-        { id:"cpp-lifetime", label:"Время жизни объектов", status:"pending" },
-        { id:"cpp-leaks", label:"Утечки памяти", status:"pending" },
-        { id:"cpp-smart-ptr", label:"unique_ptr / shared_ptr / weak_ptr", status:"pending" },
+        { id:"cpp-references", label:"Ссылки (&)", status:"learning" },
+        { id:"cpp-memory-model", label:"Модель памяти: стек и куча", status:"learning" },
+        { id:"cpp-pointers", label:"Указатели, this подробно", status:"learning" },
+        { id:"cpp-new-delete", label:"new / delete", status:"learning" },
+        { id:"cpp-lifetime", label:"Время жизни объектов", status:"learning" },
+        { id:"cpp-leaks", label:"Утечки памяти", status:"learning" },
+        { id:"cpp-smart-ptr", label:"Умные указатели: unique_ptr в процессе; shared_ptr / weak_ptr впереди", status:"learning" },
       ]},
       { name: "Организация кода", topics: [
         { id:"cpp-scope", label:"Область видимости", status:"learning" },
@@ -524,7 +537,7 @@ const DATA = [
         { id:"cpp-sfinae", label:"Type traits и SFINAE", status:"pending" },
       ]},
       { name: "Идиомы", topics: [
-        { id:"cpp-raii", label:"RAII", status:"pending" },
+        { id:"cpp-raii", label:"RAII", status:"learning" },
         { id:"cpp-copy-swap", label:"Copy-and-swap", status:"pending" },
         { id:"cpp-erase-remove", label:"Erase-remove", status:"pending" },
         { id:"cpp-pimpl", label:"Pimpl", status:"pending" },
@@ -566,8 +579,8 @@ const DATA = [
         { id:"alg-recursion", label:"Рекурсия", status:"pending" },
       ]},
       { name: "Массивы и строки", topics: [
-        { id:"alg-two-pointers", label:"Два указателя", status:"pending" },
-        { id:"alg-prefix-sums", label:"Префиксные суммы", status:"pending" },
+        { id:"alg-two-pointers", label:"Два указателя", status:"learning" },
+        { id:"alg-prefix-sums", label:"Префиксные суммы", status:"learning" },
         { id:"alg-sliding-window", label:"Скользящее окно", status:"pending" },
       ]},
       { name: "Поиск и сортировка", topics: [
@@ -575,9 +588,9 @@ const DATA = [
         { id:"alg-sorting", label:"Сортировки: слиянием, быстрая", status:"pending" },
       ]},
       { name: "Структуры данных изнутри", topics: [
-        { id:"alg-hash", label:"Хеш-таблица: как устроена", status:"pending" },
+        { id:"alg-hash", label:"Хеш-таблица: как устроена", status:"learning" },
         { id:"alg-linked-list", label:"Связный список", status:"pending" },
-        { id:"alg-stack-queue", label:"Стек и очередь в задачах", status:"pending" },
+        { id:"alg-stack-queue", label:"Стек и очередь в задачах", status:"learning" },
         { id:"alg-heap", label:"Куча (как устроен priority_queue)", status:"pending" },
         { id:"alg-trees", label:"Деревья и BST", status:"pending" },
       ]},
@@ -588,7 +601,7 @@ const DATA = [
       { name: "Продвинутое", topics: [
         { id:"alg-dp", label:"Динамическое программирование", status:"pending" },
         { id:"alg-bits", label:"Битовые трюки в задачах", status:"learning" },
-        { id:"alg-leetcode", label:"Практика: 100+ задач easy/medium", status:"pending" },
+        { id:"alg-leetcode", label:"Практика: 100+ задач easy/medium", status:"learning" },
       ]},
     ]
   },
