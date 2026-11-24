@@ -389,6 +389,11 @@
   .node.main{font-weight:600}
   .rm-start .title-node,.next-track{font-family:"IBM Plex Sans",sans-serif}
   @media(max-width:760px){.rm-row{grid-template-columns:minmax(0,1fr)}}
+  .about-profile{display:flow-root}
+  .github-profile{float:right;display:flex;flex-direction:column;align-items:center;gap:7px;margin:0 0 12px 20px;text-decoration:none;color:var(--ink);font-size:13px;font-weight:600}
+  .github-profile img{display:block;width:80px;height:80px;object-fit:cover;border-radius:50%;border:1px solid var(--line)}
+  .github-profile:hover span{text-decoration:underline}
+  @media(max-width:480px){.github-profile{margin-left:12px}.github-profile img{width:56px;height:56px}}
 </style>
 </head>
 <body>
@@ -406,10 +411,10 @@
     </div>
   </header>
 
-  <section class="overall" aria-labelledby="about-me">
+  <section class="overall about-profile" aria-labelledby="about-me">
+    <a class="github-profile" href="https://github.com/kayyooo23" target="_blank" rel="noopener noreferrer" aria-label="GitHub: kayyooo23"><img src="https://github.com/kayyooo23.png?size=160" width="80" height="80" alt="Аватар GitHub"><span>kayyooo23</span></a>
     <h2 id="about-me">Обо мне</h2>
     <p>Изучаю C++ и системное программирование. Интересуюсь low-latency разработкой и HFT. Этот roadmap — мой личный план подготовки к стажировке в 2027 году.</p>
-    <p><a href="https://github.com/kayyooo23" target="_blank" rel="noopener noreferrer">GitHub · kayyooo23</a></p>
     <h3>Мои проекты</h3>
     <ul>
       <li><strong>ClubOS</strong> — система для компьютерных клубов.</li>
