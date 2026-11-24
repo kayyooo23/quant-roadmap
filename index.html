@@ -380,6 +380,15 @@
 
   footer{color:var(--ink-soft);font-size:12px;text-align:center;padding-top:28px}
   @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+  /* Aligned skill tree */
+  .rm-row.shift-a .rm-main .node,.rm-row.shift-b .rm-main .node{transform:none}
+  .rm-row{column-gap:48px;grid-template-columns:minmax(0,1fr) 250px minmax(0,1fr)}
+  .rm-lines .spine{stroke-width:2.5;stroke-linejoin:round}
+  .rm-lines .branch{stroke-width:2;stroke-dasharray:none;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+  .node{font-family:"IBM Plex Sans",sans-serif;border-width:1.5px;border-radius:9px}
+  .node.main{font-weight:600}
+  .rm-start .title-node,.next-track{font-family:"IBM Plex Sans",sans-serif}
+  @media(max-width:760px){.rm-row{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -927,59 +936,33 @@ function renderMap(){
 // connector lines are drawn from the real positions of the boxes,
 // so they follow the layout on any screen width
 function drawLines(){
-  const rm = document.getElementById("rm");
-  const svg = rm.querySelector(".rm-lines");
-  if(!svg) return;
-  // collapse the old drawing first so it can't inflate the measurements
-  svg.setAttribute("width", 0);
-  svg.setAttribute("height", 0);
-  const base = rm.getBoundingClientRect();
-  const W = rm.clientWidth, H = rm.scrollHeight;
-  svg.setAttribute("width", W);
-  svg.setAttribute("height", H);
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.innerHTML = "";
-  const box = el => {
-    const r = el.getBoundingClientRect();
-    return {l:r.left-base.left, r:r.right-base.left, t:r.top-base.top, b:r.bottom-base.top,
-            cx:(r.left+r.right)/2-base.left, cy:(r.top+r.bottom)/2-base.top};
-  };
-  const path = (d, cls) => {
-    const p = document.createElementNS(SVG_NS, "path");
-    p.setAttribute("d", d); p.setAttribute("class", cls); svg.appendChild(p);
-  };
-  const narrow = window.matchMedia("(max-width:760px)").matches;
-  const title = rm.querySelector(".title-node");
-  const mains = [...rm.querySelectorAll(".node.main")];
-  const end = rm.querySelector(".next-track");
-  const spine = [title, ...mains, end].filter(Boolean).map(box);
-
-  for(let i = 0; i < spine.length - 1; i++){
-    const a = spine[i], b = spine[i+1];
-    if(narrow){
-      const x = spine[1] ? spine[1].l + 18 : a.l + 18;
-      path(`M ${x} ${a.b} L ${x} ${b.t}`, "spine");
-    } else {
-      const dy = b.t - a.b;
-      path(`M ${a.cx} ${a.b} C ${a.cx} ${a.b + dy*0.55}, ${b.cx} ${b.t - dy*0.55}, ${b.cx} ${b.t}`, "spine");
-    }
+  const rm=document.getElementById("rm"), svg=rm.querySelector(".rm-lines");
+  if(!svg)return;
+  svg.setAttribute("width",0);svg.setAttribute("height",0);
+  const base=rm.getBoundingClientRect(), W=rm.clientWidth,H=rm.scrollHeight;
+  svg.setAttribute("width",W);svg.setAttribute("height",H);
+  svg.setAttribute("viewBox", "0 0 "+W+" "+H);svg.innerHTML="";
+  const box=el=>{const r=el.getBoundingClientRect();return {l:r.left-base.left,r:r.right-base.left,t:r.top-base.top,b:r.bottom-base.top,cx:(r.left+r.right)/2-base.left,cy:(r.top+r.bottom)/2-base.top}};
+  const path=(d,cls)=>{const p=document.createElementNS(SVG_NS,"path");p.setAttribute("d",d);p.setAttribute("class",cls);svg.appendChild(p)};
+  const narrow=window.matchMedia("(max-width:760px)").matches;
+  const spine=[rm.querySelector(".title-node"),...rm.querySelectorAll(".node.main"),rm.querySelector(".next-track")].filter(Boolean).map(box);
+  for(let i=0;i<spine.length-1;i++){
+    const a=spine[i],b=spine[i+1],x=narrow?18:a.cx,y=narrow?18:b.cx,mid=(a.b+b.t)/2;
+    path("M "+x+" "+a.b+" V "+mid+" H "+y+" V "+b.t,"spine");
   }
-
-  rm.querySelectorAll(".rm-row").forEach(row => {
-    const m = box(row.querySelector(".node.main"));
-    row.querySelectorAll(".node.sub").forEach(el => {
-      const s = box(el);
-      if(narrow){
-        const x = m.l + 18;
-        path(`M ${x} ${s.cy} L ${s.l} ${s.cy}`, "branch");
-      } else {
-        const toRight = s.l >= m.r;
-        const x1 = toRight ? m.r : m.l;
-        const x2 = toRight ? s.l : s.r;
-        const mx = (x1 + x2) / 2;
-        path(`M ${x1} ${m.cy} C ${mx} ${m.cy}, ${mx} ${s.cy}, ${x2} ${s.cy}`, "branch");
-      }
-    });
+  rm.querySelectorAll(".rm-row").forEach(row=>{
+    const m=box(row.querySelector(".node.main")),subs=[...row.querySelectorAll(".node.sub")].map(box);
+    if(!subs.length)return;
+    if(narrow){
+      const x=18;
+      path("M "+x+" "+m.b+" V "+subs[subs.length-1].cy,"branch");
+      subs.forEach(t=>path("M "+x+" "+t.cy+" H "+t.l,"branch"));
+    }else{
+      const right=subs[0].cx>m.cx, start=right?m.r:m.l,end=right?subs[0].l:subs[0].r,x=(start+end)/2;
+      const lo=Math.min(m.cy,...subs.map(t=>t.cy)),hi=Math.max(m.cy,...subs.map(t=>t.cy));
+      path("M "+start+" "+m.cy+" H "+x+" M "+x+" "+lo+" V "+hi,"branch");
+      subs.forEach(t=>path("M "+x+" "+t.cy+" H "+(right?t.l:t.r),"branch"));
+    }
   });
 }
 
